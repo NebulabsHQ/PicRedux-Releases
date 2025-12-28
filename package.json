@@ -21,6 +21,7 @@
       "dist": "npm run build && electron-builder",
       "postinstall": "electron-builder install-app-deps",
       "rebuild": "electron-builder install-app-deps",
+      "publish": "npm run build && electron-builder --publish always $(node -e \"console.log(process.arch === 'arm64' ? '--arm64' : '--x64')\")",
       "publish:arm": "npm run build && electron-builder --arm64 --publish always",
       "publish:intel": "npm run build && electron-builder --x64 --publish always"
     },

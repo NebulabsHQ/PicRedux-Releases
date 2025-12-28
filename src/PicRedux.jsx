@@ -511,7 +511,7 @@ const QuotaWidget = ({ quotaUsed, quotaLimit, onUpgrade, t }) => {
   const isNearLimit = quotaUsed >= quotaLimit * 0.8; // 80% ou plus
 
   return (
-    <div className="mt-3 p-3 bg-zinc-900/50 border border-zinc-800 rounded-lg">
+    <div className="mt-3 p-3 bg-zinc-900/50 border border-zinc-800 rounded-lg no-drag">
       {/* Titre */}
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-medium text-zinc-400">{t.sidebar.freeTrial}</span>
@@ -546,7 +546,7 @@ const QuotaWidget = ({ quotaUsed, quotaLimit, onUpgrade, t }) => {
       ) : isNearLimit ? (
         <button
           onClick={onUpgrade}
-          className="w-full mt-1 px-2 py-1.5 text-[10px] font-medium text-violet-400 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 rounded-md transition-colors flex items-center justify-center gap-1.5"
+          className="w-full mt-1 px-2 py-1.5 text-[10px] font-medium text-violet-400 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 rounded-md transition-colors flex items-center justify-center gap-1.5 no-drag"
         >
           <Zap className="w-3 h-3" />
           {t.sidebar.unlockUnlimited}
@@ -3144,33 +3144,30 @@ const PicRedux = () => {
           SIDEBAR GAUCHE - PARAMÈTRES
           ============================================ */}
       <aside className="w-80 bg-zinc-900 border-r border-zinc-800 flex flex-col overflow-hidden">
-        {/* Safe Area - Zone draggable en haut */}
-        <div 
-          className="w-full h-8 -webkit-app-region-drag"
-          style={{ WebkitAppRegion: 'drag' }}
-        />
-
         {/* Header de la Sidebar - BRANDING */}
         <div className="px-6 py-3 border-b border-zinc-800 bg-zinc-900/50">
-          {/* NOM + BADGE - Bloc compact */}
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-1.5">
-              <img 
-                src={logoApp} 
-                alt="PicRedux" 
-                className="w-7 h-7 flex-shrink-0 rounded -mt-0.5"
-              />
-              <h2 className="text-lg font-bold text-zinc-100 leading-none tracking-tight">
-                PicRedux
-              </h2>
-            </div>
-            <div className="flex items-center gap-1.5 pl-8">
-              {!isPro && (
-                <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 px-1.5 py-px rounded border border-amber-500/20">
-                  TRIAL
-                </span>
-              )}
-              <span className="text-[10px] text-zinc-500 font-medium">v1.0</span>
+          {/* Zone draggable avec logo + titre */}
+          <div className="drag-region pt-8">
+            {/* NOM + BADGE - Bloc compact */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center gap-1.5">
+                <img 
+                  src={logoApp} 
+                  alt="PicRedux" 
+                  className="w-7 h-7 flex-shrink-0 rounded -mt-0.5"
+                />
+                <h2 className="text-lg font-bold text-zinc-100 leading-none tracking-tight">
+                  PicRedux
+                </h2>
+              </div>
+              <div className="flex items-center gap-1.5 pl-8">
+                {!isPro && (
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 px-1.5 py-px rounded border border-amber-500/20">
+                    TRIAL
+                  </span>
+                )}
+                <span className="text-[10px] text-zinc-500 font-medium">v1.0</span>
+              </div>
             </div>
           </div>
           
@@ -3186,7 +3183,7 @@ const PicRedux = () => {
           
           {/* Badge de Statut Premium - visible uniquement en mode PRO */}
           {isPro && (
-            <div className="mt-3 py-2 px-3 bg-violet-500/10 border border-violet-500/20 rounded-lg flex items-center justify-center gap-2">
+            <div className="mt-3 py-2 px-3 bg-violet-500/10 border border-violet-500/20 rounded-lg flex items-center justify-center gap-2 no-drag">
               <Crown className="text-violet-300" size={14} />
               <span className="text-xs font-medium text-violet-300">{t.sidebar.licenseActive}</span>
             </div>
@@ -3194,11 +3191,11 @@ const PicRedux = () => {
           
           {/* Formulaire d'activation - visible uniquement en mode TRIAL, en bas du logo */}
           {!isPro && (
-            <div className="space-y-2">
+            <div className="space-y-2 no-drag">
               {!showActivationForm ? (
                 <button
                   onClick={() => setShowActivationForm(true)}
-                  className="w-full h-9 px-3 text-xs font-medium text-zinc-200 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-md transition-colors flex items-center justify-center gap-2"
+                  className="w-full h-9 px-3 text-xs font-medium text-zinc-200 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-md transition-colors flex items-center justify-center gap-2 no-drag"
                 >
                   <Zap className="w-3 h-3" />
                   {t.sidebar.activateLicense}
@@ -3211,7 +3208,7 @@ const PicRedux = () => {
                     value={licenseKey}
                     onChange={(e) => setLicenseKey(e.target.value)}
                     placeholder={t.sidebar.enterLicenseKey}
-                    className="w-full h-9 px-3 text-xs bg-zinc-800 border border-zinc-700 rounded-md text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500"
+                    className="w-full h-9 px-3 text-xs bg-zinc-800 border border-zinc-700 rounded-md text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 no-drag"
                     disabled={isActivating}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !isActivating) {
@@ -3235,7 +3232,7 @@ const PicRedux = () => {
                     <button
                       onClick={handleActivation}
                       disabled={isActivating || !licenseKey.trim()}
-                      className="flex-1 h-9 px-3 text-xs font-medium text-white bg-violet-600 hover:bg-violet-700 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed rounded-md transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 h-9 px-3 text-xs font-medium text-white bg-violet-600 hover:bg-violet-700 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed rounded-md transition-colors flex items-center justify-center gap-2 no-drag"
                     >
                       {isActivating ? (
                         <>
@@ -3257,7 +3254,7 @@ const PicRedux = () => {
                         setLicenseKey('');
                       }}
                       disabled={isActivating}
-                      className="h-9 px-3 text-xs font-medium text-zinc-300 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-md transition-colors flex items-center justify-center"
+                      className="h-9 px-3 text-xs font-medium text-zinc-300 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-md transition-colors flex items-center justify-center no-drag"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -3266,7 +3263,7 @@ const PicRedux = () => {
                     href="https://nebulatools.gumroad.com/l/nvwwb"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block text-center text-xs text-violet-400 hover:text-violet-300 underline"
+                    className="block text-center text-xs text-violet-400 hover:text-violet-300 underline no-drag"
                   >
                     {t.sidebar.getLicense}
                   </a>
@@ -4056,9 +4053,9 @@ const PicRedux = () => {
           ============================================ */}
       <main className="flex-1 flex flex-col overflow-hidden bg-zinc-950">
         {/* En-tête avec titre et actions */}
-        <header className="px-6 py-4 border-b border-zinc-800 bg-zinc-900/50">
+        <header className="px-6 py-4 border-b border-zinc-800 bg-zinc-900/50 drag-region">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 no-drag">
               <h1 className="text-xl font-semibold text-zinc-200">
                 {files.length <= 1 ? t.main.file : t.main.files}
               </h1>
@@ -4066,10 +4063,10 @@ const PicRedux = () => {
                 {files.length}
               </span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 no-drag">
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="px-3 py-1.5 border border-zinc-700 bg-transparent hover:bg-zinc-800 text-zinc-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5"
+                className="px-3 py-1.5 border border-zinc-700 bg-transparent hover:bg-zinc-800 text-zinc-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 no-drag"
               >
                 <Plus size={14} />
                 {t.main.add}
@@ -4077,7 +4074,7 @@ const PicRedux = () => {
               <button
                 onClick={handleClearFiles}
                 disabled={files.length === 0}
-                className="px-3 py-1.5 border border-zinc-700 bg-transparent hover:bg-zinc-800 text-zinc-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1.5 border border-zinc-700 bg-transparent hover:bg-zinc-800 text-zinc-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed no-drag"
               >
                 <Trash2 size={14} />
                 {t.main.clearList}

@@ -121,3 +121,16 @@ img {
   background-color: #1f1f1f;
 }
 
+/* ============================================
+   ELECTRON WINDOW DRAGGING
+   ============================================ */
+
+/* Zone draggable pour le déplacement de la fenêtre */
+.drag-region {
+  -webkit-app-region: drag;
+}
+
+/* Zone non-draggable pour les éléments interactifs */
+.no-drag {
+  -webkit-app-region: no-drag;
+}

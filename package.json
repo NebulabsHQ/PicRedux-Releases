@@ -23,7 +23,8 @@
         "rebuild": "electron-builder install-app-deps",
         "publish": "npm run build && electron-builder --publish always $(node -e \"console.log(process.arch === 'arm64' ? '--arm64' : '--x64')\")",
         "publish:arm": "npm run build && electron-builder --arm64 --publish always",
-        "publish:intel": "npm run build && electron-builder --x64 --publish always"
+        "publish:intel": "npm run build && electron-builder --x64 --publish always",
+        "publish:win": "npm run build && electron-builder --win --publish always"
     },
     "build": {
         "asarUnpack": [
@@ -58,7 +59,8 @@
             "gatekeeperAssess": false
         },
         "win": {
-            "target": "nsis"
+            "target": "nsis",
+            "icon": "build/icon.ico"
         },
         "linux": {
             "target": "AppImage"

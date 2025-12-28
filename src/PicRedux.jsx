@@ -25,13 +25,13 @@ import {
   Crown,
   Check
 } from 'lucide-react';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
 import { useLanguage } from './useLanguage';
 import { supportedLanguages } from './translations';
 import logoApp from './assets/icon-512.png';
-
-const cn = (...inputs) => twMerge(clsx(inputs));
+import Button from './components/ui/Button';
+import Card from './components/ui/Card';
+import Input from './components/ui/Input';
+import { cn } from './utils/cn';
 
 /**
  * Tooltip - Composant tooltip avec Portal pour éviter les problèmes d'overflow
@@ -402,8 +402,9 @@ const SuccessModal = ({ isOpen, onClose, stats, onNewSession, destinationFolder,
         animation: 'fadeIn 0.2s ease-out'
       }}
     >
-      <div
-        className="bg-zinc-900 border border-zinc-800 rounded-lg shadow-2xl max-w-md w-full p-6 space-y-4"
+      <Card
+        variant="elevated"
+        className="max-w-md w-full p-6 space-y-4"
         onClick={(e) => e.stopPropagation()}
         style={{
           animation: 'slideUp 0.3s ease-out'
@@ -439,23 +440,27 @@ const SuccessModal = ({ isOpen, onClose, stats, onNewSession, destinationFolder,
         {/* Boutons d'action */}
         <div className="flex flex-col gap-2">
           {!isFolderButtonDisabled && (
-            <button
+            <Button
               onClick={handleOpenFolder}
-              className="w-full h-9 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-md font-medium transition-colors flex items-center justify-center gap-2"
+              variant="primaryPurple"
+              size="md"
+              className="w-full"
             >
               <FolderOpen size={16} />
               {t.main.openFolder}
-            </button>
+            </Button>
           )}
-          <button
+          <Button
             onClick={handleNewSession}
-            className="w-full h-9 px-4 bg-transparent border border-zinc-700 hover:bg-zinc-800/50 hover:text-white text-zinc-300 rounded-md font-medium transition-colors flex items-center justify-center gap-2"
+            variant="secondary"
+            size="md"
+            className="w-full"
           >
             <Plus size={16} />
             {t.main.newSession}
-          </button>
+          </Button>
         </div>
-      </div>
+      </Card>
 
       {/* Styles pour les animations */}
       <style>{`
@@ -498,7 +503,7 @@ const QuotaWidget = ({ quotaUsed, quotaLimit, onUpgrade, t }) => {
   const isNearLimit = quotaUsed >= quotaLimit * 0.8; // 80% ou plus
 
   return (
-    <div className="mt-3 p-3 bg-zinc-900/50 border border-zinc-800 rounded-lg no-drag">
+    <Card variant="subtle" className="mt-3 p-3 no-drag">
       {/* Titre */}
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-medium text-zinc-400">{t.sidebar.freeTrial}</span>
@@ -531,15 +536,17 @@ const QuotaWidget = ({ quotaUsed, quotaLimit, onUpgrade, t }) => {
           {t.sidebar.limitReachedActivateLicense}
         </p>
       ) : isNearLimit ? (
-        <button
+        <Button
           onClick={onUpgrade}
-          className="w-full mt-1 px-2 py-1.5 text-[10px] font-medium text-violet-400 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 rounded-md transition-colors flex items-center justify-center gap-1.5 no-drag"
+          variant="secondary"
+          size="xs"
+          className="w-full mt-1 no-drag"
         >
           <Zap className="w-3 h-3" />
           {t.sidebar.unlockUnlimited}
-        </button>
+        </Button>
       ) : null}
-    </div>
+    </Card>
   );
 };
 
@@ -557,8 +564,9 @@ const QuotaLimitModal = ({ isOpen, onClose, onUpgrade, stats, t }) => {
         animation: 'fadeIn 0.2s ease-out'
       }}
     >
-      <div
-        className="bg-zinc-900 border border-zinc-800 rounded-lg shadow-2xl max-w-md w-full p-6 space-y-4"
+      <Card
+        variant="elevated"
+        className="max-w-md w-full p-6 space-y-4"
         onClick={(e) => e.stopPropagation()}
         style={{
           animation: 'slideUp 0.3s ease-out'
@@ -608,21 +616,25 @@ const QuotaLimitModal = ({ isOpen, onClose, onUpgrade, stats, t }) => {
 
         {/* Boutons d'action */}
         <div className="flex flex-col gap-2">
-          <button
+          <Button
             onClick={onUpgrade}
-            className="w-full px-4 py-2.5 bg-violet-600 hover:bg-violet-500 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+            variant="primary"
+            size="lg"
+            className="w-full"
           >
             <Zap size={18} />
             {t.sidebar.activateLicenseUnlimited}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={onClose}
-            className="w-full px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg font-medium transition-colors"
+            variant="ghost"
+            size="lg"
+            className="w-full"
           >
             {t.sidebar.close}
-          </button>
+          </Button>
         </div>
-      </div>
+      </Card>
 
       {/* Styles pour les animations (réutilisés de SuccessModal) */}
       <style>{`
@@ -794,9 +806,10 @@ const FileCard = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
   };
 
   return (
-    <div 
+    <Card
+      variant="hover"
       className={cn(
-        "bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden hover:border-zinc-700 transition-all",
+        "overflow-hidden",
         isRemoving && "opacity-0 scale-95"
       )}
       style={{
@@ -860,45 +873,33 @@ const FileCard = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
           {/* Bouton Révéler - Visible uniquement si le fichier est optimisé */}
           {file.compressed && file.savedPath && onReveal && (
             <Tooltip content="Révéler dans le Finder" position="top">
-              <button
+              <Button
                 onClick={(e) => {
                   e.stopPropagation();
                   onReveal(file);
                 }}
-                className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center",
-                  "transition-all duration-200",
-                  "bg-black/60 backdrop-blur-sm border border-zinc-700/50",
-                  "hover:bg-violet-500 hover:border-violet-600",
-                  "text-zinc-300 hover:text-white",
-                  "shadow-lg hover:shadow-xl hover:shadow-violet-500/20"
-                )}
+                variant="icon"
+                size="icon"
                 aria-label="Révéler"
               >
                 <FolderOpen size={14} />
-              </button>
+              </Button>
             </Tooltip>
           )}
           
           {/* Bouton de suppression */}
           <Tooltip content="Supprimer de la liste" position="top">
-            <button
+            <Button
               onClick={(e) => {
                 e.stopPropagation();
                 handleDelete();
               }}
-              className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center",
-                "transition-all duration-200",
-                "bg-black/60 backdrop-blur-sm border border-zinc-700/50",
-                "hover:bg-red-500 hover:border-red-600",
-                "text-zinc-300 hover:text-white",
-                "shadow-lg hover:shadow-xl hover:shadow-red-500/20"
-              )}
+              variant="iconDanger"
+              size="icon"
               aria-label="Supprimer"
             >
               <Trash2 size={14} />
-            </button>
+            </Button>
           </Tooltip>
         </div>
       </div>
@@ -928,7 +929,7 @@ const FileCard = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
           )}
         </div>
       </div>
-    </div>
+    </Card>
   );
 };
 
@@ -3048,22 +3049,25 @@ const PicRedux = () => {
           {!isPro && (
             <div className="space-y-2 no-drag">
               {!showActivationForm ? (
-                <button
+                <Button
                   onClick={() => setShowActivationForm(true)}
-                  className="w-full h-9 px-3 text-xs font-medium text-zinc-200 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-md transition-colors flex items-center justify-center gap-2 no-drag"
+                  variant="ghost"
+                  size="sm"
+                  className="w-full no-drag"
                 >
                   <Zap className="w-3 h-3" />
                   {t.sidebar.activateLicense}
-                </button>
+                </Button>
               ) : (
                 <div className="space-y-2">
-                  <input
+                  <Input
                     ref={licenseKeyInputRef}
                     type="text"
                     value={licenseKey}
                     onChange={(e) => setLicenseKey(e.target.value)}
                     placeholder={t.sidebar.enterLicenseKey}
-                    className="w-full h-9 px-3 text-xs bg-zinc-800 border border-zinc-700 rounded-md text-zinc-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 no-drag"
+                    size="sm"
+                    className="w-full no-drag"
                     disabled={isActivating}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !isActivating) {
@@ -3084,10 +3088,12 @@ const PicRedux = () => {
                     </div>
                   )}
                   <div className="flex gap-2">
-                    <button
+                    <Button
                       onClick={handleActivation}
                       disabled={isActivating || !licenseKey.trim()}
-                      className="flex-1 h-9 px-3 text-xs font-medium text-white bg-violet-600 hover:bg-violet-700 disabled:bg-zinc-700 disabled:text-zinc-500 disabled:cursor-not-allowed rounded-md transition-colors flex items-center justify-center gap-2 no-drag"
+                      variant="primary"
+                      size="sm"
+                      className="flex-1 no-drag"
                     >
                       {isActivating ? (
                         <>
@@ -3100,8 +3106,8 @@ const PicRedux = () => {
                           {t.sidebar.activate}
                         </>
                       )}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => {
                         setShowActivationForm(false);
                         setActivationError(null);
@@ -3109,10 +3115,12 @@ const PicRedux = () => {
                         setLicenseKey('');
                       }}
                       disabled={isActivating}
-                      className="h-9 px-3 text-xs font-medium text-zinc-300 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-md transition-colors flex items-center justify-center no-drag"
+                      variant="ghost"
+                      size="sm"
+                      className="no-drag"
                     >
                       <X className="w-3 h-3" />
-                    </button>
+                    </Button>
                   </div>
                   <a
                     href="https://nebulatools.gumroad.com/l/nvwwb"
@@ -3837,27 +3845,22 @@ const PicRedux = () => {
         <div className="p-4 border-t border-zinc-800 bg-zinc-900">
           {!isPro && quotaUsed >= quotaLimit ? (
             // Bouton bloqué si quota atteint (mode TRIAL)
-            <button
+            <Button
               onClick={() => setShowActivationForm(true)}
-              className={cn(
-                "w-full px-3 py-2 text-sm text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2",
-                "bg-zinc-700 hover:bg-zinc-600"
-              )}
+              variant="ghost"
+              size="md"
+              className="w-full"
             >
               <Lock size={16} />
               {t.sidebar.limitReachedActivateLicenseButton}
-            </button>
+            </Button>
           ) : (
-            // Bouton normal d'optimisation
-            <button
+            <Button
               onClick={handleExportAll}
               disabled={files.length === 0 || isProcessing || (!isPro && quotaUsed >= quotaLimit)}
-              className={cn(
-                "w-full px-4 py-3 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2",
-                files.length === 0 || isProcessing || (!isPro && quotaUsed >= quotaLimit)
-                  ? "bg-zinc-700 opacity-50 cursor-not-allowed"
-                  : "bg-violet-600 hover:bg-violet-500"
-              )}
+              variant="primary"
+              size="lg"
+              className="w-full"
             >
               {isProcessing ? (
                 <>
@@ -3878,7 +3881,7 @@ const PicRedux = () => {
                   {t.main.readyForOptimization}
                 </>
               )}
-            </button>
+            </Button>
           )}
           
           {/* Sélecteur de langue */}
@@ -3951,19 +3954,15 @@ const PicRedux = () => {
               .map((tab) => {
                 const isErrorTab = tab.id === 'errors';
                 return (
-                  <button
+                  <Button
                     key={tab.id}
                     onClick={() => setActiveFilter(tab.id)}
-                    className={cn(
-                      "px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2",
-                      activeFilter === tab.id
-                        ? isErrorTab
-                          ? "bg-red-600 text-white"
-                          : "bg-violet-600 text-white"
-                        : isErrorTab
-                          ? "bg-zinc-800 text-red-400 hover:text-red-300 hover:bg-zinc-700"
-                          : "bg-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700"
-                    )}
+                    variant={activeFilter === tab.id 
+                      ? (isErrorTab ? 'tabErrorActive' : 'tabActive')
+                      : (isErrorTab ? 'tabError' : 'tab')
+                    }
+                    size="md"
+                    className="px-4 py-2"
                   >
                     {tab.label}
                     <span className={cn(
@@ -3976,7 +3975,7 @@ const PicRedux = () => {
                     )}>
                       {tab.count}
                     </span>
-                  </button>
+                  </Button>
                 );
               })}
             </div>

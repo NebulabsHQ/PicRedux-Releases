@@ -7,83 +7,83 @@
     "main": "electron/main.cjs",
     "author": "Nebulabs <nebulabs.hq@gmail.com>",
     "repository": {
-      "type": "git",
-      "url": "https://github.com/NebulabsHQ/PicRedux-Releases.git"
+        "type": "git",
+        "url": "https://github.com/NebulabsHQ/PicRedux-Releases.git"
     },
     "homepage": "https://nebulabs.gumroad.com",
     "scripts": {
-      "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
-      "build": "vite build",
-      "preview": "vite preview",
-      "electron": "electron .",
-      "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
-      "electron:build": "npm run build && electron .",
-      "dist": "npm run build && electron-builder",
-      "postinstall": "electron-builder install-app-deps",
-      "rebuild": "electron-builder install-app-deps",
-      "publish": "npm run build && electron-builder --publish always $(node -e \"console.log(process.arch === 'arm64' ? '--arm64' : '--x64')\")",
-      "publish:arm": "npm run build && electron-builder --arm64 --publish always",
-      "publish:intel": "npm run build && electron-builder --x64 --publish always"
+        "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+        "build": "vite build",
+        "preview": "vite preview",
+        "electron": "electron .",
+        "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+        "electron:build": "npm run build && electron .",
+        "dist": "npm run build && electron-builder",
+        "postinstall": "electron-builder install-app-deps",
+        "rebuild": "electron-builder install-app-deps",
+        "publish": "npm run build && electron-builder --publish always $(node -e \"console.log(process.arch === 'arm64' ? '--arm64' : '--x64')\")",
+        "publish:arm": "npm run build && electron-builder --arm64 --publish always",
+        "publish:intel": "npm run build && electron-builder --x64 --publish always"
     },
     "build": {
-      "asarUnpack": [
-        "**/node_modules/sharp/**/*",
-        "**/node_modules/@img/**/*"
-      ],
-      "appId": "com.nebulabs.picredux",
-      "productName": "PicRedux",
-      "directories": {
-        "output": "release"
-      },
-      "files": [
-        "dist/**/*",
-        "electron/**/*",
-        "package.json",
-        "node_modules/@img/**/*"
-      ],
-      "publish": [
-        {
-          "provider": "github",
-          "owner": "NebulabsHQ",
-          "repo": "PicRedux-Releases"
-        }
-      ],
-      "mac": {
-        "target": [
-          "dmg",
-          "zip"
+        "asarUnpack": [
+            "**/node_modules/sharp/**/*",
+            "**/node_modules/@img/**/*"
         ],
-        "icon": "assets/icons/icon.icns",
-        "hardenedRuntime": true,
-        "gatekeeperAssess": false
-      },
-      "win": {
-        "target": "nsis"
-      },
-      "linux": {
-        "target": "AppImage"
-      }
+        "appId": "com.nebulabs.picredux",
+        "productName": "PicRedux",
+        "directories": {
+            "output": "release"
+        },
+        "files": [
+            "dist/**/*",
+            "electron/**/*",
+            "package.json",
+            "node_modules/@img/**/*"
+        ],
+        "publish": [
+            {
+                "provider": "github",
+                "owner": "NebulabsHQ",
+                "repo": "PicRedux-Releases"
+            }
+        ],
+        "mac": {
+            "target": [
+                "dmg",
+                "zip"
+            ],
+            "icon": "assets/icons/icon.icns",
+            "hardenedRuntime": true,
+            "gatekeeperAssess": false
+        },
+        "win": {
+            "target": "nsis"
+        },
+        "linux": {
+            "target": "AppImage"
+        }
     },
     "dependencies": {
-      "clsx": "^2.1.1",
-      "electron-log": "^5.0.0",
-      "electron-store": "^11.0.2",
-      "electron-updater": "^6.1.7",
-      "lucide-react": "^0.562.0",
-      "react": "^18.2.0",
-      "react-dom": "^18.2.0",
-      "sharp": "^0.33.5",
-      "tailwind-merge": "^3.4.0"
+        "clsx": "^2.1.1",
+        "electron-log": "^5.0.0",
+        "electron-store": "^11.0.2",
+        "electron-updater": "^6.1.7",
+        "lucide-react": "^0.562.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "sharp": "^0.33.5",
+        "tailwind-merge": "^3.4.0"
     },
     "devDependencies": {
-      "@vitejs/plugin-react": "^4.2.0",
-      "autoprefixer": "^10.4.16",
-      "concurrently": "^8.2.2",
-      "electron": "^28.0.0",
-      "electron-builder": "^24.9.1",
-      "postcss": "^8.4.32",
-      "tailwindcss": "^3.4.0",
-      "vite": "^5.0.0",
-      "wait-on": "^7.2.0"
+        "@vitejs/plugin-react": "^4.2.0",
+        "autoprefixer": "^10.4.16",
+        "concurrently": "^8.2.2",
+        "electron": "^39.2.7",
+        "electron-builder": "^24.9.1",
+        "postcss": "^8.4.32",
+        "tailwindcss": "^3.4.0",
+        "vite": "^7.3.0",
+        "wait-on": "^7.2.0"
     }
-  }
+}

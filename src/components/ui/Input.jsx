@@ -1,7 +1,4 @@
-// External libraries
 import React from 'react';
-
-// Internal utilities
 import { cn } from '../../utils/cn';
 
 const Input = React.forwardRef(({ 

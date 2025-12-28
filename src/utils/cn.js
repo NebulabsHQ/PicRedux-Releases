@@ -1,4 +1,3 @@
-// External libraries
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 

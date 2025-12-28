@@ -1,4 +1,3 @@
-// External libraries
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { 
@@ -26,31 +25,21 @@ import {
   Crown,
   Check
 } from 'lucide-react';
-
-// Internal components
 import Button from './components/ui/Button';
 import Card from './components/ui/Card';
 import Input from './components/ui/Input';
-
-// Internal utilities and hooks
 import { cn } from './utils/cn';
 import { formatFileSize as formatFileSizeUtil, getMimeType, getOptimalQuality, getOutputPreview as getOutputPreviewUtil } from './utils/formatters';
 import { useFileManagement } from './hooks/useFileManagement';
 import { useLanguage } from './useLanguage';
 import { supportedLanguages } from './translations';
-
-// Assets
 import logoApp from './assets/icon-512.png';
 
-// Constants
 const PROFILE_SHOPIFY = 'Shopify / E-commerce';
 const PROFILE_EMAIL = 'Email / Newsletter';
 const PROFILE_SOCIAL_MEDIA = 'Social Media Presets';
 const PROFILE_CUSTOM = 'Custom';
 
-/**
- * Tooltip - Composant tooltip avec Portal pour éviter les problèmes d'overflow
- */
 const Tooltip = ({ children, content, position = 'right' }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [tooltipStyle, setTooltipStyle] = useState({});
@@ -64,14 +53,13 @@ const Tooltip = ({ children, content, position = 'right' }) => {
     const tooltipRect = tooltipRef.current.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    const padding = 8; // Marge de sécurité
+    const padding = 8;
 
     let top = 0;
     let left = 0;
     let transform = '';
     let finalPosition = position;
 
-    // Calculer la position initiale selon la position demandée
     switch (position) {
       case 'right':
         top = triggerRect.top + (triggerRect.height / 2);
@@ -99,11 +87,9 @@ const Tooltip = ({ children, content, position = 'right' }) => {
         transform = 'translateY(-50%)';
     }
 
-    // Calculer les dimensions réelles du tooltip après transformation
     let tooltipWidth = tooltipRect.width;
     let tooltipHeight = tooltipRect.height;
 
-    // Vérifier et corriger les débordements horizontaux
     if (finalPosition === 'right' || finalPosition === 'left') {
       let tooltipLeft, tooltipRight;
       
@@ -115,7 +101,6 @@ const Tooltip = ({ children, content, position = 'right' }) => {
         tooltipLeft = left - tooltipWidth;
       }
 
-      // Si le tooltip dépasse à droite, le placer à gauche
       if (tooltipRight > viewportWidth - padding) {
         finalPosition = 'left';
         left = triggerRect.left - padding;
@@ -123,7 +108,6 @@ const Tooltip = ({ children, content, position = 'right' }) => {
         tooltipLeft = left - tooltipWidth;
         tooltipRight = left;
       }
-      // Si le tooltip dépasse à gauche, le placer à droite
       else if (tooltipLeft < padding) {
         finalPosition = 'right';
         left = triggerRect.right + padding;
@@ -132,14 +116,12 @@ const Tooltip = ({ children, content, position = 'right' }) => {
         tooltipRight = left + tooltipWidth;
       }
 
-      // Ajustement fin pour éviter les débordements même après changement de côté
       if (finalPosition === 'right' && tooltipRight > viewportWidth - padding) {
         left = viewportWidth - tooltipWidth - padding;
       } else if (finalPosition === 'left' && tooltipLeft < padding) {
         left = tooltipWidth + padding;
       }
     } else {
-      // Pour top/bottom, centrer horizontalement mais s'assurer qu'il ne dépasse pas
       const centeredLeft = triggerRect.left + (triggerRect.width / 2);
       const halfWidth = tooltipWidth / 2;
       
@@ -152,7 +134,6 @@ const Tooltip = ({ children, content, position = 'right' }) => {
       }
     }
 
-    // Vérifier et corriger les débordements verticaux
     if (finalPosition === 'top' || finalPosition === 'bottom') {
       let tooltipTop, tooltipBottom;
       
@@ -164,7 +145,6 @@ const Tooltip = ({ children, content, position = 'right' }) => {
         tooltipBottom = top + tooltipHeight;
       }
 
-      // Si le tooltip dépasse en bas, le placer en haut
       if (tooltipBottom > viewportHeight - padding) {
         finalPosition = 'top';
         top = triggerRect.top - padding;
@@ -172,7 +152,6 @@ const Tooltip = ({ children, content, position = 'right' }) => {
         tooltipBottom = top;
         tooltipTop = top - tooltipHeight;
       }
-      // Si le tooltip dépasse en haut, le placer en bas
       else if (tooltipTop < padding) {
         finalPosition = 'bottom';
         top = triggerRect.bottom + padding;
@@ -181,14 +160,12 @@ const Tooltip = ({ children, content, position = 'right' }) => {
         tooltipBottom = top + tooltipHeight;
       }
 
-      // Ajustement fin pour éviter les débordements même après changement de côté
       if (finalPosition === 'top' && tooltipTop < padding) {
         top = tooltipHeight + padding;
       } else if (finalPosition === 'bottom' && tooltipBottom > viewportHeight - padding) {
         top = viewportHeight - tooltipHeight - padding;
       }
     } else {
-      // Pour left/right, centrer verticalement mais s'assurer qu'il ne dépasse pas
       const centeredTop = triggerRect.top + (triggerRect.height / 2);
       const halfHeight = tooltipHeight / 2;
       
@@ -212,10 +189,8 @@ const Tooltip = ({ children, content, position = 'right' }) => {
 
   useEffect(() => {
     if (isVisible) {
-      // Délai pour permettre au tooltip de se rendre d'abord
       const timeoutId = setTimeout(() => {
         updateTooltipPosition();
-        // Ajustement supplémentaire après le rendu pour corriger les débordements
         requestAnimationFrame(() => {
           updateTooltipPosition();
         });
@@ -387,7 +362,6 @@ const SuccessModal = ({ isOpen, onClose, stats, onNewSession, destinationFolder,
     try {
       await window.electronAPI.openFolder(destinationFolder);
     } catch (error) {
-      // Error handling
     }
     onClose();
   };
@@ -395,8 +369,6 @@ const SuccessModal = ({ isOpen, onClose, stats, onNewSession, destinationFolder,
   const isFolderButtonDisabled = !destinationFolder || !window.electronAPI;
 
   const handleNewSession = () => {
-    // Ne pas supprimer les images, juste fermer la modale
-    // Les images optimisées restent disponibles dans l'onglet "Optimisés"
     onClose();
   };
 
@@ -508,7 +480,7 @@ const SuccessModal = ({ isOpen, onClose, stats, onNewSession, destinationFolder,
 const QuotaWidget = ({ quotaUsed, quotaLimit, onUpgrade, t }) => {
   const percentage = Math.min((quotaUsed / quotaLimit) * 100, 100);
   const isLimitReached = quotaUsed >= quotaLimit;
-  const isNearLimit = quotaUsed >= quotaLimit * 0.8; // 80% ou plus
+  const isNearLimit = quotaUsed >= quotaLimit * 0.8;
 
   return (
     <Card variant="subtle" className="mt-3 p-3 no-drag">
@@ -793,7 +765,6 @@ const FileCard = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
 
   const handleDelete = () => {
     setIsRemoving(true);
-    // Animation rapide de sortie (100ms) avant suppression
     setTimeout(() => {
       onRemove(file.id);
     }, 100);
@@ -927,22 +898,16 @@ const FileCard = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
   );
 };
 
-// ============================================
-// COMPOSANT PRINCIPAL
-// ============================================
 
 const PicRedux = () => {
-  // Language hook
   const { language, t, changeLanguage } = useLanguage();
-  
-  // Format file size utility wrapper
   const formatFileSize = (bytes) => formatFileSizeUtil(bytes, t.units);
   
   const [files, setFiles] = useState([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [activeFilter, setActiveFilter] = useState('all'); // 'all', 'optimized', 'pending', 'errors'
+  const [activeFilter, setActiveFilter] = useState('all');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successStats, setSuccessStats] = useState({ successCount: 0, savedSize: 0 });
   const [destinationFolder, setDestinationFolder] = useState(null);
@@ -952,43 +917,39 @@ const PicRedux = () => {
   const logoInputRef = useRef(null);
   const licenseKeyInputRef = useRef(null);
 
-  // États pour les modules de compression
   const [profile, setProfile] = useState(PROFILE_CUSTOM);
   const [compressionFormat, setCompressionFormat] = useState('WebP');
   const [compressionQuality, setCompressionQuality] = useState(80);
   const [outputPrefix, setOutputPrefix] = useState('');
   const [outputSuffix, setOutputSuffix] = useState('_optimized');
-  const [resizeMode, setResizeMode] = useState('dimensions'); // 'dimensions' ou 'percentage'
+  const [resizeMode, setResizeMode] = useState('dimensions');
   const [resizeWidth, setResizeWidth] = useState('');
   const [resizeHeight, setResizeHeight] = useState('');
-  const [resizePercentage, setResizePercentage] = useState(100); // 1-200%
+  const [resizePercentage, setResizePercentage] = useState(100);
   const [keepAspectRatio, setKeepAspectRatio] = useState(true);
   const [removeMetadata, setRemoveMetadata] = useState(false);
   const [backgroundFill, setBackgroundFill] = useState(false);
-  const [backgroundColor, setBackgroundColor] = useState('#FFFFFF'); // Couleur hex par défaut : Blanc
+  const [backgroundColor, setBackgroundColor] = useState('#FFFFFF');
   const [socialPlatform, setSocialPlatform] = useState('Instagram');
-  const [socialType, setSocialType] = useState('Post'); // Sera mis à jour selon la plateforme
-  const [outputDestination, setOutputDestination] = useState('same'); // 'same' ou 'custom'
+  const [socialType, setSocialType] = useState('Post');
+  const [outputDestination, setOutputDestination] = useState('same');
   const [customOutputFolder, setCustomOutputFolder] = useState(null);
   const [watermarkEnabled, setWatermarkEnabled] = useState(false);
-  const [watermarkType, setWatermarkType] = useState('image'); // 'image' ou 'text'
+  const [watermarkType, setWatermarkType] = useState('image');
   const [watermarkText, setWatermarkText] = useState('© PicRedux');
   const [watermarkOpacity, setWatermarkOpacity] = useState(50);
   const [watermarkLogo, setWatermarkLogo] = useState(null);
   const [watermarkLogoName, setWatermarkLogoName] = useState(null);
-  const [watermarkPosition, setWatermarkPosition] = useState('center'); // 'top-left', 'top-center', 'top-right', 'center-left', 'center', 'center-right', 'bottom-left', 'bottom-center', 'bottom-right'
-  const [watermarkSize, setWatermarkSize] = useState(50); // 1% à 100%
-  const [watermarkFont, setWatermarkFont] = useState('Arial'); // Police système
-  const [watermarkColor, setWatermarkColor] = useState('#FFFFFF'); // Couleur hex par défaut : Blanc
+  const [watermarkPosition, setWatermarkPosition] = useState('center');
+  const [watermarkSize, setWatermarkSize] = useState(50);
+  const [watermarkFont, setWatermarkFont] = useState('Arial');
+  const [watermarkColor, setWatermarkColor] = useState('#FFFFFF');
   const [estimatedSize, setEstimatedSize] = useState(0);
-  const [sortBy, setSortBy] = useState('name'); // 'name', 'gain', 'size'
+  const [sortBy, setSortBy] = useState('name');
   const [layout, setLayout] = useState(() => {
-    // Récupérer le layout depuis localStorage ou utiliser 'grid' par défaut
     const savedLayout = localStorage.getItem('picredux-layout');
     return savedLayout === 'list' ? 'list' : 'grid';
-  }); // 'grid' ou 'list'
-  
-  // État de la licence (PRO/TRIAL)
+  });
   const [isPro, setIsPro] = useState(false);
   const [licenseKey, setLicenseKey] = useState('');
   const [isActivating, setIsActivating] = useState(false);
@@ -996,15 +957,11 @@ const PicRedux = () => {
   const [activationSuccess, setActivationSuccess] = useState(false);
   const [showActivationForm, setShowActivationForm] = useState(false);
   
-  // État du quota de compression
   const [quotaUsed, setQuotaUsed] = useState(0);
   const [quotaLimit, setQuotaLimit] = useState(30);
   const [quotaAllowed, setQuotaAllowed] = useState(true);
 
-  // File management hook
   const { isDuplicateFile, filteredFiles, filterStats } = useFileManagement(files, activeFilter, sortBy);
-
-  // Fonction pour gérer les fichiers (Input ou Drop)
   const handleFiles = async (fileList, dataTransferItems = null) => {
     try {
       const filesArray = Array.from(fileList).filter(file => file.type.startsWith('image/'));
@@ -1014,14 +971,11 @@ const PicRedux = () => {
         const file = filesArray[index];
         let filePath = null;
 
-        // Dans Electron, les fichiers du drag & drop ont une propriété 'path'
-        // IMPORTANT : Extraire explicitement le chemin AVANT de créer l'objet pour éviter sa perte
-        // Le spread operator {...file} ne copie pas la propriété 'path' native d'Electron
+        // Electron drag & drop provides 'path' property, but spread operator doesn't copy it
         if (file.path) {
           filePath = file.path;
         } else if (dataTransferItems && dataTransferItems[index]) {
           const item = dataTransferItems[index];
-          // Pour les fichiers locaux, essayer d'obtenir le chemin
           if (item.getAsFileSystemEntry) {
             const entry = item.getAsFileSystemEntry();
             if (entry && entry.fullPath) {
@@ -1035,16 +989,9 @@ const PicRedux = () => {
           }
         }
 
-        // Vérifier si le fichier est un doublon :
-        // 1. Contre les fichiers existants dans l'état
-        // 2. Contre les fichiers déjà ajoutés dans ce batch
         if (isDuplicateFile(file, filePath, files) || isDuplicateFile(file, filePath, newFiles)) {
-          continue; // Ignorer silencieusement le doublon
+          continue;
         }
-
-        // Note: Dans Electron, les fichiers du drag & drop ont déjà la propriété 'path'
-        // Pour les fichiers sélectionnés via input, on n'a pas accès au chemin
-        // Dans ce cas, on utilisera le téléchargement classique comme fallback
 
         let previewUrl;
         try {
@@ -1053,20 +1000,18 @@ const PicRedux = () => {
           continue;
         }
 
-        // Stocker explicitement le chemin pour éviter sa perte
-        // Le spread operator {...file} ne copie PAS la propriété path native d'Electron
         newFiles.push({
           id: `${Date.now()}-${index}`,
           file: file,
           name: file.name,
           size: file.size,
           type: file.type,
-          path: filePath, // Stockage explicite du chemin (nécessaire pour préserver les métadonnées)
-          originalPath: filePath, // Double stockage pour sécurité
+          path: filePath,
+          originalPath: filePath,
           previewUrl: previewUrl,
           compressed: false,
           compressionRatio: null,
-          status: 'pending', // 'pending', 'processing', 'done', 'error'
+          status: 'pending',
           compressedSize: null,
           compressedBlob: null,
           outputFilename: null,
@@ -1077,21 +1022,16 @@ const PicRedux = () => {
         setFiles(prev => [...prev, ...newFiles]);
       }
     } catch (error) {
-      // Error handling
     }
   };
 
-  // Focus automatique sur le champ de licence quand il devient visible
   useEffect(() => {
     if (showActivationForm && licenseKeyInputRef.current) {
-      // Petit délai pour s'assurer que le DOM est mis à jour
       setTimeout(() => {
         licenseKeyInputRef.current?.focus();
       }, 100);
     }
   }, [showActivationForm]);
-
-  // Nettoyage des URLs d'objet lors du démontage
   useEffect(() => {
     return () => {
       files.forEach(file => {
@@ -1101,9 +1041,7 @@ const PicRedux = () => {
       });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Nettoyage uniquement au démontage
-
-  // Fonction pour obtenir les dimensions selon le preset social
+  }, []);
   const getSocialPresetDimensions = () => {
     if (profile !== PROFILE_SOCIAL_MEDIA) return null;
     
@@ -1126,18 +1064,16 @@ const PicRedux = () => {
     return presets[socialPlatform]?.[socialType] || null;
   };
 
-  // Définir une qualité par défaut optimale selon le format
   useEffect(() => {
     const optimalQuality = getOptimalQuality(compressionFormat);
     setCompressionQuality(optimalQuality);
   }, [compressionFormat]);
 
-  // Fonction pour générer une vignette compressée de manière asynchrone avec Background Fill et Watermark
   const generateCompressedThumbnail = async (file, format, quality, bgFill, bgColor, wmEnabled, wmText, wmLogo, wmType, wmPosition, wmSize, wmOpacity, wmFont, wmColor, wmColorCustom) => {
     try {
       const img = await loadImage(file);
       const canvas = document.createElement('canvas');
-      // Limiter la taille de la vignette pour les performances (max 300px)
+      const maxThumbnailSize = 300;
       const maxSize = 300;
       let width = img.width;
       let height = img.height;
@@ -1156,14 +1092,11 @@ const PicRedux = () => {
         return null;
       }
       
-      // 1. Dessiner le background si backgroundFill est activé
       if (bgFill) {
-        // bgColor est maintenant directement une couleur hex
         const bgColorValue = typeof bgColor === 'string' && bgColor.startsWith('#') ? bgColor : '#FFFFFF';
         ctx.fillStyle = bgColorValue;
         ctx.fillRect(0, 0, width, height);
         
-        // Mode fit: 'contain' - l'image est redimensionnée pour tenir dans les dimensions tout en conservant le ratio
         const imageAspectRatio = img.width / img.height;
         const targetAspectRatio = width / height;
         
@@ -1173,13 +1106,11 @@ const PicRedux = () => {
         let drawY = 0;
         
         if (imageAspectRatio > targetAspectRatio) {
-          // L'image est plus large que la cible - ajuster la hauteur
           drawWidth = width;
           drawHeight = width / imageAspectRatio;
           drawX = 0;
           drawY = (height - drawHeight) / 2;
         } else {
-          // L'image est plus haute que la cible - ajuster la largeur
           drawWidth = height * imageAspectRatio;
           drawHeight = height;
           drawX = (width - drawWidth) / 2;
@@ -1188,11 +1119,9 @@ const PicRedux = () => {
         
         ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
       } else {
-        // Mode normal - redimensionner l'image pour remplir les dimensions
         ctx.drawImage(img, 0, 0, width, height);
       }
       
-      // 2. Ajouter le watermark si activé
       if (wmEnabled) {
         try {
           ctx.save();
@@ -1200,7 +1129,6 @@ const PicRedux = () => {
           
           const padding = Math.max(10, Math.min(50, width / 40));
           
-          // Calculer les positions selon le sélecteur
           const positions = {
             'top-left': { x: padding, y: padding, align: 'left', baseline: 'top' },
             'top-center': { x: width / 2, y: padding, align: 'center', baseline: 'top' },
@@ -1215,16 +1143,12 @@ const PicRedux = () => {
           
           const pos = positions[wmPosition] || positions['bottom-right'];
           
-          // Si un logo est fourni et que le type est 'image', utiliser l'image
           if (wmLogo && wmType === 'image') {
             const logoImg = await loadImage(wmLogo);
-            // À 100%, utiliser la taille native du logo. À moins de 100%, réduire proportionnellement
             const watermarkWidth = (logoImg.width * wmSize) / 100;
-            // Calculer la hauteur proportionnelle pour maintenir le ratio
             const logoAspectRatio = logoImg.width / logoImg.height;
             const watermarkHeight = watermarkWidth / logoAspectRatio;
             
-            // Ajuster la position selon l'alignement
             let logoX = pos.x;
             let logoY = pos.y;
             
@@ -1243,11 +1167,9 @@ const PicRedux = () => {
             ctx.drawImage(logoImg, logoX, logoY, watermarkWidth, watermarkHeight);
             URL.revokeObjectURL(logoImg.src);
           } else if (wmText && wmText.trim() !== '' && wmType === 'text') {
-            // Utiliser le texte du filigrane
             const watermarkWidth = (width * wmSize) / 100;
             const fontSize = Math.max(12, Math.min(200, watermarkWidth / wmText.length * 2));
             
-            // Définir la couleur du texte (wmColor est maintenant directement une couleur hex)
             const textColor = typeof wmColor === 'string' && wmColor.startsWith('#') ? wmColor : '#FFFFFF';
             ctx.fillStyle = textColor;
             ctx.font = `bold ${fontSize}px ${wmFont || 'Arial'}, sans-serif`;
@@ -1258,22 +1180,18 @@ const PicRedux = () => {
           
           ctx.restore();
         } catch (wmError) {
-          // Continue without watermark
         }
       }
       
-      // 3. Convertir selon le format
       let mimeType = format === 'Original' ? (file.type || 'image/jpeg') : getMimeType(format);
       if (!mimeType) {
-        // Fallback si getMimeType retourne null
         if (format === 'AVIF') {
-          mimeType = 'image/png'; // Fallback pour AVIF (Canvas ne supporte pas AVIF)
+          mimeType = 'image/png';
         } else {
           mimeType = 'image/jpeg';
         }
       }
       
-      // Utiliser la qualité du slider
       const qualityValue = quality / 100;
       
       return new Promise((resolve) => {
@@ -1295,14 +1213,9 @@ const PicRedux = () => {
     }
   };
 
-  // État pour stocker les vignettes compressées
   const [compressedThumbnails, setCompressedThumbnails] = useState({});
-
-  // États debounced pour backgroundColor et watermarkColor (pour éviter les régénérations trop fréquentes)
   const [debouncedBackgroundColor, setDebouncedBackgroundColor] = useState(backgroundColor);
   const [debouncedWatermarkColor, setDebouncedWatermarkColor] = useState(watermarkColor);
-
-  // Debounce pour backgroundColor (300ms de délai)
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedBackgroundColor(backgroundColor);
@@ -1313,7 +1226,6 @@ const PicRedux = () => {
     };
   }, [backgroundColor]);
 
-  // Debounce pour watermarkColor (300ms de délai)
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedWatermarkColor(watermarkColor);
@@ -1324,13 +1236,11 @@ const PicRedux = () => {
     };
   }, [watermarkColor]);
 
-  // Générer les vignettes compressées de manière asynchrone quand les réglages changent
   useEffect(() => {
     let isCancelled = false;
     const currentThumbnails = compressedThumbnails;
     
     const generateThumbnails = async () => {
-      // Nettoyer les anciennes vignettes
       Object.values(currentThumbnails).forEach(url => {
         if (url && typeof url === 'string') {
           URL.revokeObjectURL(url);
@@ -1346,7 +1256,6 @@ const PicRedux = () => {
       
       const thumbnails = {};
       
-      // Générer les vignettes pour tous les fichiers de manière asynchrone
       const promises = files.map(async (file) => {
         if (isCancelled) return;
         
@@ -1357,7 +1266,7 @@ const PicRedux = () => {
               compressionFormat,
               compressionQuality,
               backgroundFill,
-              debouncedBackgroundColor, // Utiliser la version debounced
+              debouncedBackgroundColor,
               watermarkEnabled,
               watermarkText,
               watermarkLogo,
@@ -1366,13 +1275,12 @@ const PicRedux = () => {
               watermarkSize,
               watermarkOpacity,
               watermarkFont,
-              debouncedWatermarkColor // Utiliser la version debounced
+              debouncedWatermarkColor
             );
             if (!isCancelled && thumbnailUrl) {
               thumbnails[file.id] = thumbnailUrl;
             }
           } catch (error) {
-            // Error handling
           }
         }
       });
@@ -1382,7 +1290,6 @@ const PicRedux = () => {
       if (!isCancelled) {
         setCompressedThumbnails(thumbnails);
       } else {
-        // Nettoyer les vignettes générées si le composant a été démonté
         Object.values(thumbnails).forEach(url => {
           if (url && typeof url === 'string') {
             URL.revokeObjectURL(url);
@@ -1393,7 +1300,6 @@ const PicRedux = () => {
     
     generateThumbnails();
     
-    // Nettoyage à la fin
     return () => {
       isCancelled = true;
     };
@@ -1415,7 +1321,6 @@ const PicRedux = () => {
     files.map(f => f.id).join(',')
   ]);
 
-  // Mise à jour automatique des valeurs de redimensionnement selon le profil
   useEffect(() => {
     if (profile === PROFILE_SHOPIFY) {
       setResizeWidth(1200);
@@ -1436,11 +1341,9 @@ const PicRedux = () => {
         setResizeHeight(dimensions.height);
         setResizeMode('dimensions');
       }
-      // Pour les presets sociaux : décocher "Keep aspect ratio" et suggérer "Background Fill"
       setKeepAspectRatio(false);
-      setBackgroundFill(true); // Activer automatiquement Background Fill
+      setBackgroundFill(true);
     } else if (profile === PROFILE_CUSTOM) {
-      // Reset pour Custom : remettre à l'état original
       setResizeWidth('');
       setResizeHeight('');
       setResizeMode('dimensions');
@@ -1449,7 +1352,6 @@ const PicRedux = () => {
     }
   }, [profile, socialPlatform, socialType]);
 
-  // Vérifier le statut de la licence et le quota au montage du composant
   useEffect(() => {
     const checkLicenseStatus = async () => {
       if (window.electronAPI && window.electronAPI.getLicenseStatus) {
@@ -1486,7 +1388,6 @@ const PicRedux = () => {
   }, []);
 
 
-  // Fonction pour traduire les codes d'erreur
   const translateError = (errorCode, errorData = {}) => {
     const errorMessages = {
       LICENSE_KEY_EMPTY: t.sidebar.licenseKeyEmpty,
@@ -1504,13 +1405,11 @@ const PicRedux = () => {
     return errorMessages[errorCode] || t.sidebar.licenseInvalid;
   };
 
-  // Fonction pour effacer la licence
   const handleClearLicense = async () => {
     if (!window.electronAPI || !window.electronAPI.clearLicense) {
       return;
     }
 
-    // Demander confirmation
     if (!window.confirm(t.sidebar.clearLicenseConfirm)) {
       return;
     }
@@ -1522,7 +1421,6 @@ const PicRedux = () => {
         setLicenseKey('');
         setActivationError(null);
         setActivationSuccess(false);
-        // Recharger le quota après effacement (pour mettre à jour isPro dans le backend)
         if (window.electronAPI && window.electronAPI.checkQuota) {
           try {
             const quota = await window.electronAPI.checkQuota();
@@ -1530,16 +1428,13 @@ const PicRedux = () => {
             setQuotaLimit(quota.limit || 30);
             setQuotaAllowed(quota.allowed || false);
           } catch (error) {
-            // Error handling
           }
         }
       }
     } catch (error) {
-      // Error handling
     }
   };
 
-  // Fonction pour activer la licence
   const handleActivation = async () => {
     if (!licenseKey || licenseKey.trim() === '') {
       setActivationError(t.sidebar.licenseKeyEmpty);
@@ -1561,7 +1456,6 @@ const PicRedux = () => {
         setIsPro(true);
         setActivationSuccess(true);
         setActivationError(null);
-        // Recharger le quota après activation (pour mettre à jour isPro dans le backend)
         if (window.electronAPI && window.electronAPI.checkQuota) {
           try {
             const quota = await window.electronAPI.checkQuota();
@@ -1569,21 +1463,17 @@ const PicRedux = () => {
             setQuotaLimit(quota.limit || 30);
             setQuotaAllowed(quota.allowed || true);
           } catch (error) {
-            // Error handling
           }
         }
-        // Fermer le formulaire après un court délai pour laisser voir le message de succès
         setTimeout(() => {
           setShowActivationForm(false);
           setActivationSuccess(false);
           setLicenseKey('');
         }, 2000);
       } else {
-        // Traduire le code d'erreur si présent, sinon utiliser le message d'erreur direct
         if (result.errorCode) {
           setActivationError(translateError(result.errorCode, result.errorData || {}));
         } else if (result.error) {
-          // Fallback pour les anciens messages d'erreur non traduits
           setActivationError(result.error);
         } else {
           setActivationError(t.sidebar.licenseInvalid);
@@ -1596,7 +1486,6 @@ const PicRedux = () => {
     }
   };
 
-  // Gestion du drag & drop global
   const handleDragOver = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -1606,7 +1495,6 @@ const PicRedux = () => {
   const handleDragLeave = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    // Ne masquer l'overlay que si on quitte vraiment la fenêtre
     if (!e.currentTarget.contains(e.relatedTarget)) {
       setIsDragOver(false);
     }
@@ -1617,7 +1505,6 @@ const PicRedux = () => {
     e.stopPropagation();
     setIsDragOver(false);
 
-    // Bloquer le drop si quota atteint (mode TRIAL)
     if (!isPro && quotaUsed >= quotaLimit) {
       alert(t.sidebar.trialLimitReachedAlert.replace('{used}', quotaUsed).replace('{limit}', quotaLimit));
       setShowActivationForm(true);
@@ -1631,17 +1518,14 @@ const PicRedux = () => {
     }
   };
 
-  // Gestion du clic sur le bouton d'import
   const handleFileInput = (e) => {
     const selectedFiles = e.target.files;
     if (selectedFiles.length > 0) {
       handleFiles(selectedFiles);
     }
-    // Reset input pour permettre de sélectionner le même fichier
     e.target.value = '';
   };
 
-  // Supprimer un fichier
   const handleRemoveFile = (fileId) => {
     setFiles(prev => {
       const fileToRemove = prev.find(f => f.id === fileId);
@@ -1651,7 +1535,6 @@ const PicRedux = () => {
       return prev.filter(f => f.id !== fileId);
     });
     
-    // Nettoyer aussi la vignette compressée
     setCompressedThumbnails(prev => {
       const thumbnailUrl = prev[fileId];
       if (thumbnailUrl && typeof thumbnailUrl === 'string') {
@@ -1663,7 +1546,6 @@ const PicRedux = () => {
     });
   };
 
-  // Calcul des stats
   const stats = {
     total: files.length,
     totalSize: files.reduce((sum, f) => sum + f.size, 0),
@@ -1674,22 +1556,18 @@ const PicRedux = () => {
     ? Math.round((savedSize / stats.totalSize) * 100) 
     : 0;
 
-  // Fonction utilitaire pour charger une image
   const loadImage = (file) => {
     return new Promise((resolve, reject) => {
-      // Utiliser window.Image explicitement pour éviter les conflits avec les imports
       const img = document.createElement('img');
       const imageUrl = URL.createObjectURL(file);
       
-      // Timeout pour éviter les blocages
       const timeout = setTimeout(() => {
         URL.revokeObjectURL(imageUrl);
         reject(new Error('Timeout lors du chargement de l\'image'));
-      }, 30000); // 30 secondes max
+      }, 30000);
       
       img.onload = () => {
         clearTimeout(timeout);
-        // Vérifier que l'image a des dimensions valides
         if (img.width === 0 || img.height === 0) {
           URL.revokeObjectURL(imageUrl);
           reject(new Error('Image invalide : dimensions nulles'));
@@ -1708,9 +1586,6 @@ const PicRedux = () => {
     });
   };
 
-  // Fonction utilitaire pour obtenir le MIME type selon le format
-
-  // Fonction principale de traitement d'image (THE ENGINE)
   const processFile = async (fileData, config) => {
     const {
       format = compressionFormat,
@@ -1738,17 +1613,14 @@ const PicRedux = () => {
     try {
       // 1. Charger l'image
       const img = await loadImage(fileData.file);
-      imageUrl = img.src; // Sauvegarder l'URL pour le nettoyage
+      imageUrl = img.src;
       
       const originalWidth = img.width;
       const originalHeight = img.height;
 
-      // Validation des dimensions
       if (originalWidth === 0 || originalHeight === 0) {
-        throw new Error('Dimensions d\'image invalides');
+        throw new Error('Invalid image dimensions');
       }
-
-      // 2. Calculer les dimensions finales
       let finalWidth = originalWidth;
       let finalHeight = originalHeight;
 
@@ -1756,34 +1628,29 @@ const PicRedux = () => {
         finalWidth = Math.max(1, Math.round(originalWidth * (resizeVal / 100)));
         finalHeight = Math.max(1, Math.round(originalHeight * (resizeVal / 100)));
       } else if (mode === 'dimensions' || mode === 'fixed') {
-        // Si les champs sont vides ou null, conserver la taille originale (pas de redimensionnement)
         const widthValue = width === '' || width === null || width === undefined ? null : Number(width);
         const heightValue = height === '' || height === null || height === undefined || height === 'Auto' ? null : Number(height);
         
         if (widthValue === null && heightValue === null) {
-          // Pas de redimensionnement : conserver les dimensions originales
           finalWidth = originalWidth;
           finalHeight = originalHeight;
         } else if (widthValue !== null && heightValue === null) {
-          // Seulement la largeur est définie : calculer la hauteur en conservant le ratio
           if (widthValue <= 0) {
-            throw new Error('Largeur de redimensionnement invalide');
+            throw new Error('Invalid resize width');
           }
           const ratio = widthValue / originalWidth;
           finalWidth = Math.max(1, Math.round(originalWidth * ratio));
           finalHeight = Math.max(1, Math.round(originalHeight * ratio));
         } else if (widthValue === null && heightValue !== null) {
-          // Seulement la hauteur est définie : calculer la largeur en conservant le ratio
           if (heightValue <= 0) {
-            throw new Error('Hauteur de redimensionnement invalide');
+            throw new Error('Invalid resize height');
           }
           const ratio = heightValue / originalHeight;
           finalWidth = Math.max(1, Math.round(originalWidth * ratio));
           finalHeight = Math.max(1, Math.round(originalHeight * ratio));
         } else {
-          // Les deux dimensions sont définies : calculer le ratio pour maintenir les proportions
           if (widthValue <= 0 || heightValue <= 0) {
-            throw new Error('Dimensions de redimensionnement invalides');
+            throw new Error('Invalid resize dimensions');
           }
           const ratio = Math.min(widthValue / originalWidth, heightValue / originalHeight);
           finalWidth = Math.max(1, Math.round(originalWidth * ratio));
@@ -1791,33 +1658,25 @@ const PicRedux = () => {
         }
       }
 
-      // Validation des dimensions finales
       if (finalWidth <= 0 || finalHeight <= 0) {
-        throw new Error('Dimensions finales invalides');
+        throw new Error('Invalid final dimensions');
       }
-
-      // 3. Créer le canvas
       const canvas = document.createElement('canvas');
       canvas.width = finalWidth;
       canvas.height = finalHeight;
       const ctx = canvas.getContext('2d');
 
-      // Vérifier que le contexte est valide
       if (!ctx) {
-        throw new Error('Impossible de créer le contexte canvas');
+        throw new Error('Cannot create canvas context');
       }
 
-      // 4. Dessiner le background si backgroundFill est activé
       if (bgFill) {
-        // bgColor est maintenant directement une couleur hex
         const bgColorValue = typeof bgColor === 'string' && bgColor.startsWith('#') ? bgColor : '#FFFFFF';
         ctx.fillStyle = bgColorValue;
         ctx.fillRect(0, 0, finalWidth, finalHeight);
       }
 
-      // 5. Dessiner l'image redimensionnée
       if (bgFill) {
-        // Mode fit: 'contain' - l'image est redimensionnée pour tenir dans les dimensions tout en conservant le ratio
         const imageAspectRatio = originalWidth / originalHeight;
         const targetAspectRatio = finalWidth / finalHeight;
         
@@ -1827,13 +1686,11 @@ const PicRedux = () => {
         let drawY = 0;
         
         if (imageAspectRatio > targetAspectRatio) {
-          // L'image est plus large que la cible - ajuster la hauteur
           drawWidth = finalWidth;
           drawHeight = finalWidth / imageAspectRatio;
           drawX = 0;
           drawY = (finalHeight - drawHeight) / 2;
         } else {
-          // L'image est plus haute que la cible - ajuster la largeur
           drawWidth = finalHeight * imageAspectRatio;
           drawHeight = finalHeight;
           drawX = (finalWidth - drawWidth) / 2;
@@ -1842,11 +1699,9 @@ const PicRedux = () => {
         
         ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
       } else {
-        // Mode normal - redimensionner l'image pour remplir les dimensions
         ctx.drawImage(img, 0, 0, finalWidth, finalHeight);
       }
 
-      // 6. Ajouter le filigrane si activé
       if (wmEnabled) {
         try {
           ctx.save();
@@ -1854,7 +1709,6 @@ const PicRedux = () => {
           
           const padding = Math.max(10, Math.min(50, finalWidth / 40));
           
-          // Calculer la position selon le sélecteur
           let logoX = 0;
           let logoY = 0;
           let textX = 0;
@@ -1862,7 +1716,6 @@ const PicRedux = () => {
           let textAlign = 'left';
           let textBaseline = 'top';
           
-          // Calculer les positions selon la grille 3x3
           const positions = {
             'top-left': { x: padding, y: padding, align: 'left', baseline: 'top' },
             'top-center': { x: finalWidth / 2, y: padding, align: 'center', baseline: 'top' },
@@ -1877,16 +1730,12 @@ const PicRedux = () => {
           
           const pos = positions[wmPosition] || positions['bottom-right'];
           
-          // Si un logo est fourni et que le type est 'image', utiliser l'image
           if (wmLogo && wmType === 'image') {
             const logoImg = await loadImage(wmLogo);
-            // À 100%, utiliser la taille native du logo. À moins de 100%, réduire proportionnellement
             const watermarkWidth = (logoImg.width * wmSize) / 100;
-            // Calculer la hauteur proportionnelle pour maintenir le ratio
             const logoAspectRatio = logoImg.width / logoImg.height;
             const watermarkHeight = watermarkWidth / logoAspectRatio;
             
-            // Ajuster la position selon l'alignement
             if (pos.align === 'center') {
               logoX = pos.x - watermarkWidth / 2;
             } else if (pos.align === 'right') {
@@ -1906,12 +1755,9 @@ const PicRedux = () => {
             ctx.drawImage(logoImg, logoX, logoY, watermarkWidth, watermarkHeight);
             URL.revokeObjectURL(logoImg.src);
           } else if (wmText && wmText.trim() !== '' && wmType === 'text') {
-            // Utiliser le texte du filigrane avec les nouvelles options
-            // Pour le texte, utiliser une taille relative à la largeur de l'image
             const watermarkWidth = (finalWidth * wmSize) / 100;
             const fontSize = Math.max(12, Math.min(200, watermarkWidth / wmText.length * 2));
             
-            // Définir la couleur du texte (wmColor est maintenant directement une couleur hex)
             const textColor = typeof wmColor === 'string' && wmColor.startsWith('#') ? wmColor : '#FFFFFF';
             ctx.fillStyle = textColor;
             ctx.font = `bold ${fontSize}px ${wmFont || 'Arial'}, sans-serif`;
@@ -1922,36 +1768,27 @@ const PicRedux = () => {
           
           ctx.restore();
         } catch (wmError) {
-          // Continue without watermark
         }
       }
 
-      // 6. Compression : convertir en blob
       let mimeType = getMimeType(format);
-      let actualMimeType = mimeType; // MIME type réel utilisé pour toBlob
+      let actualMimeType = mimeType;
       let useFallback = false;
       
-      // Si format Original, utiliser le type du fichier ou fallback sur JPEG
       if (!mimeType) {
         mimeType = fileData.type || 'image/jpeg';
         actualMimeType = mimeType;
       }
 
-      // Formats supportés nativement par Canvas API
       const nativeSupportedTypes = ['image/jpeg', 'image/png', 'image/webp'];
       
-      // Gestion des formats non supportés nativement par Canvas API
       if (format === 'AVIF') {
-        // AVIF n'est pas supporté par Canvas API, doit être traité dans le backend avec Sharp
-        // On va convertir d'abord en PNG via Canvas, puis convertir en AVIF dans le backend
         actualMimeType = 'image/png';
         useFallback = true;
       } else if (format === 'SVG') {
-        // SVG est un format vectoriel, Canvas API ne peut pas générer de SVG
         actualMimeType = 'image/png';
         useFallback = true;
       } else if (!nativeSupportedTypes.includes(actualMimeType)) {
-        // Fallback générique sur JPEG si le type n'est pas supporté
         actualMimeType = 'image/jpeg';
         useFallback = true;
       }
@@ -1959,40 +1796,32 @@ const PicRedux = () => {
       const qualityValue = Math.max(0, Math.min(1, quality / 100));
 
       return new Promise((resolve, reject) => {
-        // Timeout pour éviter les blocages
         const timeout = setTimeout(() => {
-          reject(new Error('Timeout lors de la compression'));
-        }, 30000); // 30 secondes max
+          reject(new Error('Compression timeout'));
+        }, 30000);
 
         canvas.toBlob(
           async (blob) => {
             clearTimeout(timeout);
             
             if (!blob) {
-              reject(new Error(`Échec de la compression (format: ${actualMimeType})`));
+              reject(new Error(`Compression failed (format: ${actualMimeType})`));
               return;
             }
-
-            // Nettoyer l'URL de l'image chargée
             if (imageUrl) {
               URL.revokeObjectURL(imageUrl);
             }
 
-            // Si le format demandé est AVIF, convertir via le backend avec Sharp
             if (format === 'AVIF' && window.electronAPI) {
               try {
-                // S'assurer que la qualité est toujours entre 1 et 100 pour AVIF (Sharp exige >= 1)
                 const avifQuality = Math.max(1, Math.min(100, quality || 80));
                 
-                // Convertir le blob en ArrayBuffer
                 const arrayBuffer = await blob.arrayBuffer();
                 const uint8Array = new Uint8Array(arrayBuffer);
                 
-                // Appeler le backend pour conversion AVIF avec la qualité validée
                 const result = await window.electronAPI.convertToAvif(Array.from(uint8Array), avifQuality);
                 
                 if (result.success) {
-                  // Créer un nouveau blob AVIF depuis le buffer retourné
                   const avifBlob = new Blob([new Uint8Array(result.buffer)], { type: 'image/avif' });
                   
                   resolve({
@@ -2006,10 +1835,9 @@ const PicRedux = () => {
                   });
                   return;
                 } else {
-                  throw new Error(result.error || 'Erreur lors de la conversion AVIF');
+                  throw new Error(result.error || 'AVIF conversion error');
                 }
               } catch (avifError) {
-                // Fallback sur PNG si la conversion AVIF échoue
                 const mimeToFormat = {
                   'image/webp': 'WebP',
                   'image/jpeg': 'JPEG',
@@ -2031,7 +1859,6 @@ const PicRedux = () => {
               }
             }
 
-            // Si useFallback est true, convertir le MIME type en format pour getOutputPreview
             let actualFormatName = format;
             if (useFallback) {
               const mimeToFormat = {
@@ -2058,7 +1885,6 @@ const PicRedux = () => {
         );
       });
     } catch (error) {
-      // Nettoyer l'URL en cas d'erreur
       if (imageUrl) {
         URL.revokeObjectURL(imageUrl);
       }
@@ -2066,19 +1892,15 @@ const PicRedux = () => {
     }
   };
 
-  // Fonction pour sauvegarder un fichier dans le dossier source (SANS DIALOGUE)
   const saveFileToSourceFolder = async (blob, fileData, formatOverride = null, qualityOverride = null, options = {}) => {
     if (!window.electronAPI) {
       return downloadFile(blob, getOutputPreview(fileData.name, formatOverride));
     }
 
-    // Déterminer le dossier de destination
     let outputDir;
     if (outputDestination === 'custom' && customOutputFolder) {
       outputDir = customOutputFolder;
     } else if (fileData.path) {
-      // Extraire le dossier source et construire le chemin de sortie
-      // Gérer les séparateurs Windows (\\) et Unix (/)
       const pathSeparator = fileData.path.includes('\\') ? '\\' : '/';
       const lastSeparator = Math.max(
         fileData.path.lastIndexOf('/'),
@@ -2089,27 +1911,22 @@ const PicRedux = () => {
       return downloadFile(blob, getOutputPreview(fileData.name, formatOverride));
     }
 
-    // Si on a un dossier de destination, sauvegarder
     if (outputDir) {
       try {
         const outputFilename = getOutputPreview(fileData.name, formatOverride);
         const pathSeparator = outputDir.includes('\\') ? '\\' : '/';
         
-        // Forcer l'extension .avif si le format est AVIF
         let finalOutputFilename = outputFilename;
         if (formatOverride === 'AVIF' || formatOverride === 'avif') {
-          // S'assurer que l'extension est bien .avif
           const nameWithoutExt = outputFilename.replace(/\.[^/.]+$/, '');
           finalOutputFilename = `${nameWithoutExt}.avif`;
         }
         
         const outputPath = `${outputDir}${pathSeparator}${finalOutputFilename}`;
 
-        // Convertir le blob en ArrayBuffer puis en Uint8Array
         const arrayBuffer = await blob.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
 
-        // Préparer les options pour le backend
         let qualityToUse = qualityOverride !== null ? qualityOverride : compressionQuality;
         if (formatOverride === 'AVIF' || formatOverride === 'avif') {
           qualityToUse = Math.max(1, Math.min(100, qualityToUse || 80));
@@ -2118,10 +1935,9 @@ const PicRedux = () => {
         const keepMetadata = !removeMetadata;
         const inputPath = fileData.path || fileData.originalPath || null;
         
-        // Préparer les options pour le backend (resize, fill, watermark)
+ (resize, fill, watermark)
         const backendOptions = {};
         
-        // Options de redimensionnement
         if (resizeMode === 'dimensions' && (resizeWidth || resizeHeight)) {
           backendOptions.resize = {
             mode: 'dimensions',
@@ -2135,12 +1951,10 @@ const PicRedux = () => {
           };
         }
         
-        // Option de remplissage (Background Fill)
         if (backgroundFill && backgroundColor) {
           backendOptions.fillColor = backgroundColor;
         }
         
-        // Options de filigrane
         if (watermarkEnabled) {
           backendOptions.watermark = {
             enabled: true,
@@ -2151,7 +1965,6 @@ const PicRedux = () => {
           };
           
           if (watermarkType === 'image' && watermarkLogo) {
-            // Convertir le logo en buffer pour le backend
             const logoArrayBuffer = await watermarkLogo.arrayBuffer();
             backendOptions.watermark.image = Array.from(new Uint8Array(logoArrayBuffer));
           } else if (watermarkType === 'text' && watermarkText) {
@@ -2167,13 +1980,12 @@ const PicRedux = () => {
           formatOverride,
           qualityToUse,
           keepMetadata,
-          false, // preserveModificationTime
+          false,
           inputPath,
           backendOptions
         );
         
         if (result.success) {
-          // Retourner l'objet complet pour que le frontend puisse utiliser finalSize
           return {
             success: true,
             path: result.path,
@@ -2191,7 +2003,6 @@ const PicRedux = () => {
     }
   };
 
-  // Fonction pour télécharger un fichier (fallback)
   const downloadFile = (blob, filename) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -2201,7 +2012,6 @@ const PicRedux = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    // Retourner un objet cohérent avec la taille du blob (fallback, donc taille approximative)
     return { 
       success: true, 
       path: filename,
@@ -2210,17 +2020,14 @@ const PicRedux = () => {
     };
   };
 
-  // Fonction pour calculer l'estimation de taille (rapide, pour preview)
   const calculateEstimatedSize = async () => {
     if (files.length === 0) {
       setEstimatedSize(0);
       return;
     }
 
-    // Prendre le premier fichier pour l'estimation
     const firstFile = files[0];
     
-    // Vérifier que le fichier est valide
     if (!firstFile || !firstFile.file) {
       setEstimatedSize(0);
       return;
@@ -2261,7 +2068,6 @@ const PicRedux = () => {
                              compressionFormat === 'WebP' ? 0.7 : 
                              compressionFormat === 'JPEG' ? 0.8 : 
                              compressionFormat === 'PNG' ? 0.95 : 0.9;
-        // Estimation basée sur le redimensionnement (simplifié)
         let resizeFactor = 1;
         if (resizeMode === 'percentage') {
           resizeFactor = resizePercentage / 100;
@@ -2275,7 +2081,6 @@ const PicRedux = () => {
     }
   };
 
-  // Debounce pour l'estimation en temps réel
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       calculateEstimatedSize();
@@ -2303,20 +2108,17 @@ const PicRedux = () => {
     watermarkColor,
   ]);
 
-  // Generate output filename preview
   const getOutputPreview = (originalName, formatOverride = null) => {
     const formatToUse = formatOverride || compressionFormat;
     return getOutputPreviewUtil(originalName, formatToUse, outputPrefix, outputSuffix);
   };
 
-  // Fonction pour révéler un fichier dans le Finder/Explorer
   const handleReveal = async (file) => {
     if (!file.savedPath || !window.electronAPI) {
       return;
     }
     
     try {
-      // Extraire le dossier parent du fichier
       const pathSeparator = file.savedPath.includes('\\') ? '\\' : '/';
       const lastSeparator = Math.max(
         file.savedPath.lastIndexOf('/'),
@@ -2328,12 +2130,10 @@ const PicRedux = () => {
         await window.electronAPI.openFolder(folderPath);
       }
     } catch (error) {
-      // Error handling
     }
   };
 
 
-  // Fonction pour gérer le logo du filigrane
   const handleLogoUpload = (e) => {
     const file = e.target.files?.[0];
     if (file && file.type.startsWith('image/')) {
@@ -2342,7 +2142,6 @@ const PicRedux = () => {
     }
   };
 
-  // Fonction pour supprimer le logo
   const handleRemoveLogo = () => {
     setWatermarkLogo(null);
     setWatermarkLogoName(null);
@@ -2351,9 +2150,7 @@ const PicRedux = () => {
     }
   };
 
-  // Fonction pour vider la liste
   const handleClearFiles = () => {
-    // Nettoyer les URLs
     files.forEach(file => {
       if (file.previewUrl) {
         URL.revokeObjectURL(file.previewUrl);
@@ -2363,16 +2160,13 @@ const PicRedux = () => {
   };
 
 
-  // Fonction pour exporter tout (BATCH PROCESSING - TOUTES LES IMAGES)
   const handleExportAll = async () => {
     if (files.length === 0 || isProcessing) return;
     
     if (!isPro && quotaUsed >= quotaLimit) {
       setShowActivationForm(true);
-      return; // STOPPE TOUT ICI - Pas de compression possible
+      return;
     }
-    
-    // Vérifier le quota côté backend pour s'assurer de la cohérence
     if (window.electronAPI && window.electronAPI.checkQuota) {
       try {
         const quota = await window.electronAPI.checkQuota();
@@ -2394,7 +2188,6 @@ const PicRedux = () => {
     setIsProcessing(true);
     setProgress(0);
 
-    // Préparer les dimensions : passer null si vides pour conserver les dimensions originales
     let finalResizeWidth = null;
     if (resizeWidth !== '' && resizeWidth !== null && resizeWidth !== undefined) {
       if (typeof resizeWidth === 'number') {
@@ -2419,17 +2212,15 @@ const PicRedux = () => {
       }
     }
     
-    // Déterminer la qualité à utiliser
-    // Pour "Original", on applique la compression au format original de l'image
     const finalQuality = compressionQuality;
     
       const config = {
       format: compressionFormat,
       quality: finalQuality,
-      resizeMode: resizeMode, // 'dimensions' ou 'percentage'
-      resizeValue: resizeMode === 'percentage' ? resizePercentage : 100, // Pourcentage si mode percentage, sinon non utilisé
-      resizeWidth: resizeMode === 'dimensions' ? finalResizeWidth : null, // null si mode percentage
-      resizeHeight: resizeMode === 'dimensions' ? finalResizeHeight : null, // null si mode percentage
+      resizeMode: resizeMode,
+      resizeValue: resizeMode === 'percentage' ? resizePercentage : 100,
+      resizeWidth: resizeMode === 'dimensions' ? finalResizeWidth : null,
+      resizeHeight: resizeMode === 'dimensions' ? finalResizeHeight : null,
       watermarkEnabled,
       watermarkText,
       watermarkOpacity,
@@ -2449,24 +2240,20 @@ const PicRedux = () => {
     let totalOriginalSize = 0;
     let totalCompressedSize = 0;
     let firstDestinationFolder = null;
-    let quotaLimitReached = false; // Flag pour indiquer si on a atteint la limite
+    let quotaLimitReached = false;
     const totalFiles = files.length;
 
-    // Traiter TOUTES les images séquentiellement
     for (let i = 0; i < totalFiles; i++) {
       const fileData = files[i];
       
-      // VÉRIFICATION AVANT CHAQUE FICHIER : Arrêter si quota atteint (TRIAL uniquement)
       if (!isPro) {
-        // Re-vérifier le quota avant chaque traitement pour être sûr
         if (window.electronAPI && window.electronAPI.checkQuota) {
           try {
             const quotaCheck = await window.electronAPI.checkQuota();
             if (!quotaCheck.allowed || quotaCheck.count >= quotaCheck.limit) {
               setQuotaUsed(quotaCheck.count);
               setQuotaAllowed(false);
-              // Marquer les fichiers restants (y compris celui-ci) comme non traités
-              quotaLimitReached = true; // Marquer que la limite a été atteinte
+              quotaLimitReached = true;
               const remainingFiles = files.slice(i);
               if (remainingFiles.length > 0) {
                 setFiles(prev => prev.map(f => {
@@ -2477,25 +2264,20 @@ const PicRedux = () => {
                   return f;
                 }));
               }
-              // ARRÊTER LA BOUCLE IMMÉDIATEMENT
               break;
             }
-            // Mettre à jour le quota utilisé au cas où
             setQuotaUsed(quotaCheck.count);
           } catch (error) {
-            // Error handling
           }
         }
 
         if (quotaUsed >= quotaLimit) {
           quotaLimitReached = true;
-          // ARRÊTER LA BOUCLE IMMÉDIATEMENT
           break;
         }
       }
       
       try {
-        // Mettre à jour le statut du fichier à 'processing'
         setFiles(prev => prev.map(f => 
           f.id === fileData.id 
             ? { ...f, status: 'processing' }
@@ -2505,14 +2287,10 @@ const PicRedux = () => {
         // Traiter le fichier (compression)
         const result = await processFile(fileData, config);
 
-        // Générer le nom de fichier de sortie avec suffixe (utiliser le format réel si fallback)
         const outputFilename = getOutputPreview(fileData.name, result.actualFormat);
 
-        // Sauvegarder automatiquement dans le dossier source (SANS DIALOGUE)
-        // Passer aussi la qualité et les options pour la conversion backend
         const backendOptions = {};
         
-        // Options de redimensionnement
         if (config.resizeMode === 'dimensions' && (config.resizeWidth || config.resizeHeight)) {
           backendOptions.resize = {
             mode: 'dimensions',
@@ -2526,12 +2304,10 @@ const PicRedux = () => {
           };
         }
         
-        // Option de remplissage (Background Fill)
         if (config.backgroundFill && config.backgroundColor) {
           backendOptions.fillColor = config.backgroundColor;
         }
         
-        // Options de filigrane
         if (config.watermarkEnabled) {
           backendOptions.watermark = {
             enabled: true,
@@ -2542,7 +2318,6 @@ const PicRedux = () => {
           };
           
           if (config.watermarkType === 'image' && config.watermarkLogo) {
-            // Convertir le logo en buffer pour le backend
             const logoArrayBuffer = await config.watermarkLogo.arrayBuffer();
             backendOptions.watermark.image = Array.from(new Uint8Array(logoArrayBuffer));
           } else if (config.watermarkType === 'text' && config.watermarkText) {
@@ -2554,23 +2329,18 @@ const PicRedux = () => {
         
         const saveResult = await saveFileToSourceFolder(result.blob, fileData, result.actualFormat, config.quality, backendOptions);
 
-        // Récupérer le chemin de sauvegarde (saveResult est maintenant toujours un objet avec success/path/finalSize)
         const savedPath = (saveResult && saveResult.path) ? saveResult.path : (typeof saveResult === 'string' ? saveResult : null);
 
-        // Vérifier que la sauvegarde a réussi (saveResult est maintenant un objet avec success/path/finalSize)
         const saveSuccess = saveResult && (
           (typeof saveResult === 'object' && (saveResult.success === true || saveResult.path)) ||
           (typeof saveResult === 'string' && saveResult.length > 0)
         );
 
         if (!saveSuccess) {
-          throw new Error('Échec de la sauvegarde du fichier');
+          throw new Error('File save failed');
         }
 
-        // Calculer le gain réel avec la taille FINALE du fichier sauvegardé SUR LE DISQUE
-        // Le backend retourne maintenant la taille réelle du fichier sur le disque (après safety check PNG)
         const originalSize = fileData.size;
-        // Utiliser la taille finale sur disque retournée par le backend (priorité à finalSize, puis size)
         const compressedSize = (saveResult && typeof saveResult === 'object' && (saveResult.finalSize || saveResult.size)) 
           ? (saveResult.finalSize || saveResult.size) 
           : result.size;
@@ -2578,47 +2348,33 @@ const PicRedux = () => {
           ? Math.round(((originalSize - compressedSize) / originalSize) * 100)
           : 0;
 
-        // Collecter les statistiques
         totalOriginalSize += originalSize;
         totalCompressedSize += compressedSize;
         
-        // Stocker le premier dossier de destination (tous les fichiers sont dans le même dossier source)
         if (!firstDestinationFolder && savedPath && typeof savedPath === 'string') {
-          // Extraire le dossier parent du chemin de sauvegarde
-          // Ignorer si c'est juste un nom de fichier (pas de chemin complet)
           const pathSeparator = savedPath.includes('\\') ? '\\' : '/';
           const lastSeparator = Math.max(
             savedPath.lastIndexOf('/'),
             savedPath.lastIndexOf('\\')
           );
-          // Ne considérer que les chemins absolus (qui contiennent un séparateur)
           if (lastSeparator > 0) {
             firstDestinationFolder = savedPath.substring(0, lastSeparator);
           }
-          // Si lastSeparator <= 0, c'est juste un nom de fichier, on laisse firstDestinationFolder à null
         }
 
-        // Vérifier si le fichier a été écrasé (même chemin que l'original)
-        // Un fichier est écrasé si :
-        // 1. Le chemin de sortie correspond au chemin d'entrée (même fichier)
-        // 2. OU si le nom de fichier de sortie correspond au nom d'entrée (sans préfixe/suffixe)
         let isOverwritten = false;
         if (fileData.path && savedPath) {
           const normalizedOriginal = fileData.path.toLowerCase().replace(/\\/g, '/');
           const normalizedSaved = savedPath.toLowerCase().replace(/\\/g, '/');
           
-          // Comparer les chemins complets
           if (normalizedOriginal === normalizedSaved) {
             isOverwritten = true;
           } else {
-            // Comparer juste les noms de fichiers (au cas où le chemin serait légèrement différent)
             const originalFileName = fileData.path.split(/[/\\]/).pop()?.toLowerCase();
             const savedFileName = savedPath.split(/[/\\]/).pop()?.toLowerCase();
             const originalNameWithoutExt = fileData.name.toLowerCase().replace(/\.[^/.]+$/, '');
             const savedNameWithoutExt = savedFileName?.replace(/\.[^/.]+$/, '');
             
-            // Si le nom de fichier sauvegardé correspond au nom d'origine (sans préfixe/suffixe)
-            // et que préfixe/suffixe sont vides, alors c'est un écrasement
             if (originalNameWithoutExt === savedNameWithoutExt && 
                 outputPrefix === '' && outputSuffix === '') {
               isOverwritten = true;
@@ -2626,38 +2382,32 @@ const PicRedux = () => {
           }
         }
         
-        // Si le fichier a été écrasé, créer un nouveau File object à partir du blob
         let updatedFile = fileData.file;
         let updatedPreviewUrl = fileData.previewUrl;
         
         if (isOverwritten && result.blob) {
           try {
-            // Créer un nouveau File object à partir du blob sauvegardé
             const newFile = new File([result.blob], fileData.name, { 
               type: result.blob.type || fileData.type 
             });
             
-            // Révoquer l'ancienne previewUrl
             if (fileData.previewUrl) {
               URL.revokeObjectURL(fileData.previewUrl);
             }
             
-            // Créer une nouvelle previewUrl à partir du nouveau File
             updatedFile = newFile;
             updatedPreviewUrl = URL.createObjectURL(newFile);
           } catch (error) {
-            // Keep original values on error
           }
         }
 
-        // Mettre à jour le fichier dans le state
         setFiles(prev => prev.map(f => 
           f.id === fileData.id 
             ? {
                 ...f,
                 file: updatedFile,
                 previewUrl: updatedPreviewUrl,
-                size: isOverwritten ? compressedSize : f.size, // Mettre à jour la taille si écrasé
+                size: isOverwritten ? compressedSize : f.size,
                 status: 'done',
                 compressed: true,
                 compressionRatio: gain,
@@ -2669,16 +2419,12 @@ const PicRedux = () => {
             : f
         ));
 
-        // Incrémenter le quota après une compression réussie (TRIAL uniquement)
-        // On incrémente le quota si la sauvegarde a réussi et que l'utilisateur n'est pas PRO
         if (window.electronAPI && window.electronAPI.incrementQuota && saveSuccess && !isPro) {
           try {
             const quotaResult = await window.electronAPI.incrementQuota();
             
-            // Ne mettre à jour le quota QUE si le backend a confirmé le succès et que l'utilisateur n'est pas PRO
             if (quotaResult && quotaResult.success === true && !quotaResult.isPro) {
               const newCount = quotaResult.count !== undefined && quotaResult.count !== null ? quotaResult.count : 0;
-              // Utiliser la fonction de mise à jour avec callback pour éviter les problèmes de closure
               setQuotaUsed(prevCount => {
                 const finalCount = quotaResult.count !== undefined && quotaResult.count !== null ? quotaResult.count : (prevCount + 1);
                 return finalCount;
@@ -2687,7 +2433,6 @@ const PicRedux = () => {
               if (!isPro && newCount >= quotaLimit) {
                 setQuotaAllowed(false);
                 quotaLimitReached = true;
-                // Marquer les fichiers restants comme non traités
                 const remainingFiles = files.slice(i + 1);
                 if (remainingFiles.length > 0) {
                   setFiles(prev => prev.map(f => {
@@ -2698,14 +2443,12 @@ const PicRedux = () => {
                     return f;
                   }));
                 }
-                // ARRÊTER LA BOUCLE IMMÉDIATEMENT
                 break;
               }
             } else {
               if (quotaResult && quotaResult.error === 'Quota atteint') {
                 setQuotaAllowed(false);
-                quotaLimitReached = true; // Marquer que la limite a été atteinte
-                // Marquer les fichiers restants comme non traités
+                quotaLimitReached = true;
                 const remainingFiles = files.slice(i + 1);
                 if (remainingFiles.length > 0) {
                   setFiles(prev => prev.map(f => {
@@ -2716,17 +2459,14 @@ const PicRedux = () => {
                     return f;
                   }));
                 }
-                // ARRÊTER LA BOUCLE IMMÉDIATEMENT
                 break;
               }
             }
           } catch (error) {
             if (error.message && error.message.includes('Quota atteint')) {
               setQuotaAllowed(false);
-              // ARRÊTER LA BOUCLE IMMÉDIATEMENT
               break;
             }
-            // Sinon, continuer même en cas d'erreur (fail-safe)
           }
         }
 
@@ -2734,7 +2474,6 @@ const PicRedux = () => {
       } catch (error) {
         errorCount++;
 
-        // Mettre à jour le statut du fichier en erreur
         setFiles(prev => prev.map(f => 
           f.id === fileData.id 
             ? { 
@@ -2746,32 +2485,25 @@ const PicRedux = () => {
         ));
       }
 
-      // Mettre à jour la barre de progression
       const progressValue = Math.round(((i + 1) / totalFiles) * 100);
       setProgress(progressValue);
 
-      // Petit délai pour laisser l'UI se mettre à jour
       await new Promise(resolve => setTimeout(resolve, 50));
     }
 
-    // Afficher un résumé du traitement
     setIsProcessing(false);
     setProgress(0);
 
-    // Vérifier si le traitement a été arrêté à cause du quota
     if (quotaLimitReached && !isPro) {
       const remainingCount = totalFiles - successCount - errorCount;
-      // Récupérer le quota actuel depuis le backend pour avoir la valeur exacte
       let currentQuotaUsed = quotaUsed;
       if (window.electronAPI && window.electronAPI.checkQuota) {
         try {
           const quotaCheck = await window.electronAPI.checkQuota();
           currentQuotaUsed = quotaCheck.count || quotaUsed;
         } catch (error) {
-          // Error handling
         }
       }
-      // Afficher la modale de limite de quota
       setQuotaLimitStats({
         successCount,
         remainingCount,
@@ -2783,15 +2515,11 @@ const PicRedux = () => {
     }
 
     if (errorCount > 0) {
-      // En cas d'erreur, ne pas afficher de modal
     }
     
-    // Afficher la modal de succès uniquement s'il n'y a pas d'erreurs ET qu'il y a au moins un succès
     if (errorCount === 0 && successCount > 0) {
-      // Calculer le gain total d'espace
       const savedSize = totalOriginalSize - totalCompressedSize;
       
-      // Afficher la modale de succès
       setSuccessStats({
         successCount,
         savedSize: savedSize > 0 ? savedSize : 0
@@ -3042,7 +2770,6 @@ const PicRedux = () => {
                         value={socialPlatform}
                         onChange={(e) => {
                           setSocialPlatform(e.target.value);
-                          // Réinitialiser le type quand on change de plateforme
                           if (e.target.value === 'Instagram') {
                             setSocialType('Post');
                           } else if (e.target.value === 'YouTube') {
@@ -3673,7 +3400,6 @@ const PicRedux = () => {
                     onChange={(e) => {
                       setOutputDestination(e.target.value);
                       if (e.target.value === 'custom' && window.electronAPI) {
-                        // Ouvrir le sélecteur de dossier
                         window.electronAPI.selectFolder().then((result) => {
                           if (result && !result.canceled && result.filePaths && result.filePaths.length > 0) {
                             setCustomOutputFolder(result.filePaths[0]);
@@ -3708,7 +3434,6 @@ const PicRedux = () => {
         {/* Bouton "Lancer l'optimisation" fixé en bas */}
         <div className="p-4 border-t border-zinc-800 bg-zinc-900">
           {!isPro && quotaUsed >= quotaLimit ? (
-            // Bouton bloqué si quota atteint (mode TRIAL)
             <Button
               onClick={() => setShowActivationForm(true)}
               variant="ghost"
@@ -3814,7 +3539,7 @@ const PicRedux = () => {
                 { id: 'pending', label: t.main.pending, count: filterStats.pending },
                 { id: 'errors', label: t.main.errors, count: filterStats.errors },
               ]
-              .filter(tab => tab.id !== 'errors' || tab.count > 0) // Masquer le bouton Erreurs si count === 0
+              .filter(tab => tab.id !== 'errors' || tab.count > 0)
               .map((tab) => {
                 const isErrorTab = tab.id === 'errors';
                 return (

@@ -1,4 +1,3 @@
-// External libraries
 const { app, BrowserWindow, ipcMain, dialog, shell, net } = require('electron');
 const path = require('path');
 const { existsSync, writeFileSync, readFileSync, statSync, utimesSync, unlinkSync } = require('fs');
@@ -17,13 +16,6 @@ const PRODUCT_ID = '2iuHpZLSnI_LmE1dnej9cg==';
 // Phase C (<45%):    Palette collapse (aggressive compression)
 // Entropy dampening: When dither < 0.15 or colors < 128, accelerate decay to reduce dead zones.
 
-/**
- * Get PNG compression parameters based on quality level (0-100)
- * Returns { colors, dither, phase } optimized for perceived linearity
- * 
- * @param {number} quality - Compression quality (0-100, where 100 = max fidelity)
- * @returns {{colors: number, dither: number, phase: string}} PNG compression parameters
- */
 function getPngCompressionParams(quality) {
   quality = Math.max(0, Math.min(100, quality));
   
@@ -87,9 +79,8 @@ let storePromise = (async () => {
       if (existsSync(configPath)) {
         try {
           unlinkSync(configPath);
-        } catch (unlinkError) {
-          // Continue even if deletion fails, new store will overwrite
-        }
+      } catch (unlinkError) {
+      }
       }
       
       store = new Store({
@@ -156,7 +147,6 @@ function createWindow() {
   });
 
   mainWindow.webContents.on('preload-error', (event, preloadPath, error) => {
-    // Preload error handling
   });
 
   mainWindow.webContents.on('dom-ready', () => {
@@ -193,7 +183,6 @@ function createWindow() {
   });
 
   mainWindow.webContents.on('did-fail-load', () => {
-    // Error handling
   });
 }
 
@@ -214,19 +203,9 @@ app.on('window-all-closed', () => {
 });
 
 process.on('uncaughtException', () => {
-  // Error handling
 });
 
 ipcMain.handle('save-file', async (event, bufferData, filePath, format = null, quality = 80, keepMetadata = true, preserveModificationTime = false, inputPath = null, options = {}) => {
-  /**
-   * Pipeline de traitement d'image avec Sharp
-   * Ordre strict : Source → Métadonnées → Resize → Fill → Watermark → Format → Sauvegarde
-   * 
-   * options peut contenir:
-   * - resize: { width, height, mode: 'dimensions'|'percentage', value }
-   * - fillColor: string (hex color)
-   * - watermark: { enabled, type: 'image'|'text', image, text, position, size, opacity, color, font }
-   */
   
   let pipeline;
   if (inputPath && existsSync(inputPath)) {
@@ -234,7 +213,7 @@ ipcMain.handle('save-file', async (event, bufferData, filePath, format = null, q
   } else {
     const inputBuffer = Buffer.isBuffer(bufferData) ? bufferData : Buffer.from(bufferData);
     if (!inputBuffer || inputBuffer.length === 0) {
-      throw new Error('Buffer d\'entrée vide ou invalide');
+      throw new Error('Empty or invalid input buffer');
     }
     pipeline = sharp(inputBuffer, { failOn: 'none' });
   }
@@ -245,7 +224,6 @@ ipcMain.handle('save-file', async (event, bufferData, filePath, format = null, q
       try {
         originalFileSize = statSync(inputPath).size;
       } catch (statError) {
-        // Continue with buffer size
       }
     }
     
@@ -376,7 +354,6 @@ ipcMain.handle('save-file', async (event, bufferData, filePath, format = null, q
             tile: false
           });
         } catch (wmError) {
-          // Watermark processing error
         }
       } else if (wm.type === 'text' && wm.text) {
         try {
@@ -435,7 +412,6 @@ ipcMain.handle('save-file', async (event, bufferData, filePath, format = null, q
             blend: 'over'
           });
         } catch (wmError) {
-          // Watermark processing error
         }
       }
       
@@ -489,7 +465,6 @@ ipcMain.handle('save-file', async (event, bufferData, filePath, format = null, q
         const originalStats = statSync(inputPath);
         utimesSync(finalPath, originalStats.atime, originalStats.mtime);
       } catch (utimesError) {
-        // Continue if time preservation fails
       }
     }
     
@@ -525,7 +500,7 @@ ipcMain.handle('process-image-batch', async (event, images, config) => {
   for (const image of images) {
     try {
       if (!image.path || !existsSync(image.path)) {
-        throw new Error(`Fichier source introuvable: ${image.path || image.name}`);
+        throw new Error(`Source file not found: ${image.path || image.name}`);
       }
 
       const sourceDir = path.dirname(image.path);
@@ -556,13 +531,13 @@ ipcMain.handle('process-image-batch', async (event, images, config) => {
         originalSize: originalSize,
         outputPath: outputPath,
         outputFilename: outputFilename,
-        message: 'En attente de traitement...'
+        message: 'Pending processing...'
       });
     } catch (error) {
       results.push({
         id: image.id,
         success: false,
-        error: error.message || 'Erreur inconnue',
+        error: error.message || 'Unknown error',
         originalSize: image.size || 0
       });
     }
@@ -593,14 +568,14 @@ ipcMain.handle('get-file-paths', async () => {
 ipcMain.handle('open-folder', async (event, folderPath) => {
   try {
     if (!folderPath) {
-      return { success: false, error: 'Chemin de dossier non fourni' };
+      return { success: false, error: 'Folder path not provided' };
     }
     const folderToOpen = existsSync(folderPath) && !require('fs').statSync(folderPath).isDirectory()
       ? path.dirname(folderPath)
       : folderPath;
     
     if (!existsSync(folderToOpen)) {
-      return { success: false, error: 'Dossier introuvable' };
+      return { success: false, error: 'Folder not found' };
     }
     
     await shell.openPath(folderToOpen);
@@ -662,7 +637,6 @@ ipcMain.handle('verify-license', async (event, licenseKey) => {
                   return;
                 }
               } catch (e) {
-                // Invalid JSON, continue with connection error
               }
               
               resolve({ 
@@ -820,7 +794,7 @@ ipcMain.handle('increment-quota', async () => {
     
     const currentCount = quotaStore.get('compressionCount', 0);
     if (currentCount >= limit) {
-      return { success: false, error: 'Quota atteint', count: currentCount, limit: limit };
+      return { success: false, error: 'Quota reached', count: currentCount, limit: limit };
     }
     
     const newCount = currentCount + 1;

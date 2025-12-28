@@ -1,19 +1,7 @@
-// External libraries
 import { useMemo } from 'react';
 
-/**
- * Custom hook for file management logic (filtering, sorting, duplicate detection)
- */
 export const useFileManagement = (files, activeFilter, sortBy) => {
-  /**
-   * Check if a file is a duplicate
-   * @param {File} newFile - New file to check
-   * @param {string|null} newFilePath - Path of the new file
-   * @param {Array} existingFiles - Array of existing files
-   * @returns {boolean} True if duplicate
-   */
   const isDuplicateFile = (newFile, newFilePath, existingFiles) => {
-    // Check by absolute path (priority)
     if (newFilePath) {
       const normalizedNewPath = newFilePath.replace(/\\/g, '/');
       const isPathDuplicate = existingFiles.some(existing => {
@@ -28,7 +16,6 @@ export const useFileManagement = (files, activeFilter, sortBy) => {
       }
     }
     
-    // Fallback: check by name + size
     const isNameSizeDuplicate = existingFiles.some(existing => 
       existing.name === newFile.name && existing.size === newFile.size
     );
@@ -36,9 +23,6 @@ export const useFileManagement = (files, activeFilter, sortBy) => {
     return isNameSizeDuplicate;
   };
 
-  /**
-   * Filter and sort files based on active filter and sort criteria
-   */
   const filteredFiles = useMemo(() => {
     let filtered;
     
@@ -56,7 +40,6 @@ export const useFileManagement = (files, activeFilter, sortBy) => {
         filtered = files;
     }
     
-    // Apply sorting
     const sorted = [...filtered].sort((a, b) => {
       switch (sortBy) {
         case 'name':
@@ -64,11 +47,11 @@ export const useFileManagement = (files, activeFilter, sortBy) => {
         case 'gain':
           const gainA = a.compressionRatio || 0;
           const gainB = b.compressionRatio || 0;
-          return gainB - gainA; // Descending order
+          return gainB - gainA;
         case 'size':
           const sizeA = a.compressedSize || a.size;
           const sizeB = b.compressedSize || b.size;
-          return sizeA - sizeB; // Ascending order
+          return sizeA - sizeB;
         default:
           return 0;
       }
@@ -77,9 +60,6 @@ export const useFileManagement = (files, activeFilter, sortBy) => {
     return sorted;
   }, [files, activeFilter, sortBy]);
 
-  /**
-   * Calculate filter statistics
-   */
   const filterStats = useMemo(() => ({
     all: files.length,
     optimized: files.filter(f => f.compressed && f.status === 'done').length,

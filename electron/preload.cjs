@@ -1,8 +1,7 @@
-// External libraries
 const { contextBridge, ipcRenderer } = require('electron');
 
 if (!contextBridge || !ipcRenderer) {
-  throw new Error('ContextBridge non disponible dans preload');
+  throw new Error('ContextBridge not available in preload');
 }
 
 contextBridge.exposeInMainWorld('electronAPI', {

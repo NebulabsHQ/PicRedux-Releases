@@ -1,15 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { 
-  Aperture, 
-  Home, 
   Image as ImageIcon, 
   Settings, 
-  Download,
-  Upload,
   UploadCloud,
   Zap,
-  Info,
   X,
   ChevronDown,
   FileText,
@@ -26,9 +21,6 @@ import {
   FolderOpen,
   LayoutGrid,
   List,
-  RefreshCw,
-  ArrowLeft,
-  Languages,
   Lock,
   Crown,
   Check
@@ -39,12 +31,7 @@ import { useLanguage } from './useLanguage';
 import { supportedLanguages } from './translations';
 import logoApp from './assets/icon-512.png';
 
-// Utility function to merge Tailwind classes
 const cn = (...inputs) => twMerge(clsx(inputs));
-
-// ============================================
-// COMPOSANTS UI RÉUTILISABLES
-// ============================================
 
 /**
  * Tooltip - Composant tooltip avec Portal pour éviter les problèmes d'overflow
@@ -392,7 +379,7 @@ const SuccessModal = ({ isOpen, onClose, stats, onNewSession, destinationFolder,
     try {
       await window.electronAPI.openFolder(destinationFolder);
     } catch (error) {
-      console.error('Erreur lors de l\'ouverture du dossier:', error);
+      // Error handling
     }
     onClose();
   };
@@ -1105,7 +1092,6 @@ const PicRedux = () => {
         try {
           previewUrl = URL.createObjectURL(file);
         } catch (urlError) {
-          console.error('Erreur lors de la création de l\'URL de prévisualisation:', urlError);
           continue;
         }
 
@@ -1133,8 +1119,7 @@ const PicRedux = () => {
         setFiles(prev => [...prev, ...newFiles]);
       }
     } catch (error) {
-      console.error('Erreur lors de la gestion des fichiers:', error);
-      // Ne pas bloquer l'application en cas d'erreur
+      // Error handling
     }
   };
 
@@ -1333,8 +1318,7 @@ const PicRedux = () => {
           
           ctx.restore();
         } catch (wmError) {
-          console.warn('Erreur lors de l\'ajout du filigrane dans la vignette:', wmError);
-          // Continuer sans le filigrane plutôt que d'échouer
+          // Continue without watermark
         }
       }
       
@@ -1364,7 +1348,6 @@ const PicRedux = () => {
         );
       });
     } catch (error) {
-      console.error('Erreur lors de la génération de la vignette compressée:', error);
       return null;
     }
   };
@@ -1446,7 +1429,7 @@ const PicRedux = () => {
               thumbnails[file.id] = thumbnailUrl;
             }
           } catch (error) {
-            console.error(`Erreur lors de la génération de la vignette pour ${file.name}:`, error);
+            // Error handling
           }
         }
       });
@@ -1534,7 +1517,6 @@ const PicRedux = () => {
             setLicenseKey(status.key);
           }
         } catch (error) {
-          console.error('Erreur lors de la vérification du statut de la licence:', error);
           setIsPro(false);
         }
       }
@@ -1547,13 +1529,10 @@ const PicRedux = () => {
           setQuotaUsed(quota.count || 0);
           setQuotaLimit(quota.limit || 30);
           setQuotaAllowed(quota.allowed || false);
-          // Mettre à jour isPro si le quota indique qu'on est PRO
           if (quota.isPro) {
             setIsPro(true);
           }
         } catch (error) {
-          console.error('Erreur lors de la vérification du quota:', error);
-          // En cas d'erreur, autoriser quand même (fail-safe)
           setQuotaAllowed(true);
         }
       }
@@ -1563,77 +1542,6 @@ const PicRedux = () => {
     checkQuota();
   }, []);
 
-  // Exposer des fonctions utilitaires sur window pour le débogage (console)
-  useEffect(() => {
-    // Fonction pour réinitialiser le quota de compression
-    window.resetQuota = async () => {
-      if (!window.electronAPI || !window.electronAPI.resetQuota) {
-        console.error('❌ API Electron ou resetQuota non disponible');
-        return;
-      }
-      try {
-        const result = await window.electronAPI.resetQuota();
-        if (result.success) {
-          // Mettre à jour le state
-          setQuotaUsed(0);
-          setQuotaAllowed(true);
-        } else {
-          console.error('❌ Erreur lors de la réinitialisation:', result.error);
-        }
-      } catch (error) {
-        console.error('❌ Erreur:', error);
-      }
-    };
-
-    // Fonction pour désactiver la licence PRO
-    window.disableLicense = async () => {
-      if (!window.electronAPI || !window.electronAPI.clearLicense) {
-        console.error('❌ API Electron ou clearLicense non disponible');
-        return;
-      }
-      try {
-        const result = await window.electronAPI.clearLicense();
-        if (result.success) {
-          // Mettre à jour le state
-          setIsPro(false);
-          setLicenseKey('');
-          // Recharger le quota
-          if (window.electronAPI && window.electronAPI.checkQuota) {
-            const quota = await window.electronAPI.checkQuota();
-            setQuotaUsed(quota.count || 0);
-            setQuotaLimit(quota.limit || 30);
-            setQuotaAllowed(quota.allowed || false);
-          }
-        } else {
-          console.error('❌ Erreur lors de la désactivation:', result.error);
-        }
-      } catch (error) {
-        console.error('❌ Erreur:', error);
-      }
-    };
-
-    // Fonction pour afficher l'aide
-    window.picReduxHelp = () => {
-      console.log('%c🛠️ PicRedux - Fonctions de débogage', 'font-size: 16px; font-weight: bold; color: #a855f7;');
-      console.log('');
-      console.log('%cFonctions disponibles:', 'font-weight: bold;');
-      console.log('  • window.resetQuota()    - Réinitialise le compteur de compression (quota)');
-      console.log('  • window.disableLicense() - Désactive la licence PRO en cours');
-      console.log('  • window.picReduxHelp() - Affiche cette aide');
-      console.log('');
-      console.log('%cExemples:', 'font-weight: bold;');
-      console.log('  await window.resetQuota()');
-      console.log('  await window.disableLicense()');
-    };
-
-
-    // Nettoyer à la destruction du composant
-    return () => {
-      delete window.resetQuota;
-      delete window.disableLicense;
-      delete window.picReduxHelp;
-    };
-  }, []);
 
   // Fonction pour traduire les codes d'erreur
   const translateError = (errorCode, errorData = {}) => {
@@ -1656,7 +1564,6 @@ const PicRedux = () => {
   // Fonction pour effacer la licence
   const handleClearLicense = async () => {
     if (!window.electronAPI || !window.electronAPI.clearLicense) {
-      console.error('API Electron non disponible pour effacer la licence');
       return;
     }
 
@@ -1680,15 +1587,12 @@ const PicRedux = () => {
             setQuotaLimit(quota.limit || 30);
             setQuotaAllowed(quota.allowed || false);
           } catch (error) {
-            console.error('Erreur lors de la vérification du quota après effacement:', error);
+            // Error handling
           }
         }
-        console.log('Licence effacée avec succès');
-      } else {
-        console.error('Erreur lors de l\'effacement de la licence:', result.error);
       }
     } catch (error) {
-      console.error('Erreur lors de l\'effacement de la licence:', error);
+      // Error handling
     }
   };
 
@@ -1722,7 +1626,7 @@ const PicRedux = () => {
             setQuotaLimit(quota.limit || 30);
             setQuotaAllowed(quota.allowed || true);
           } catch (error) {
-            console.error('Erreur lors de la vérification du quota après activation:', error);
+            // Error handling
           }
         }
         // Fermer le formulaire après un court délai pour laisser voir le message de succès
@@ -1743,7 +1647,6 @@ const PicRedux = () => {
         }
       }
     } catch (error) {
-      console.error('Erreur lors de l\'activation:', error);
       setActivationError(t.sidebar.verificationError.replace('{message}', error.message || ''));
     } finally {
       setIsActivating(false);
@@ -2092,8 +1995,7 @@ const PicRedux = () => {
           
           ctx.restore();
         } catch (wmError) {
-          console.warn('Erreur lors de l\'ajout du filigrane:', wmError);
-          // Continuer sans le filigrane plutôt que d'échouer
+          // Continue without watermark
         }
       }
 
@@ -2119,9 +2021,6 @@ const PicRedux = () => {
         useFallback = true;
       } else if (format === 'SVG') {
         // SVG est un format vectoriel, Canvas API ne peut pas générer de SVG
-        // Pour SVG source: copie directe possible (géré séparément si nécessaire)
-        // Pour raster vers SVG: conversion impossible, utiliser PNG comme fallback
-        console.warn('Conversion raster vers SVG non supportée via Canvas API. Utilisation de PNG comme fallback.');
         actualMimeType = 'image/png';
         useFallback = true;
       } else if (!nativeSupportedTypes.includes(actualMimeType)) {
@@ -2180,11 +2079,9 @@ const PicRedux = () => {
                   });
                   return;
                 } else {
-                  console.error('[AVIF Frontend] Erreur retournée par le backend:', result.error);
                   throw new Error(result.error || 'Erreur lors de la conversion AVIF');
                 }
               } catch (avifError) {
-                console.error('[AVIF Frontend] Exception lors de la conversion AVIF:', avifError);
                 // Fallback sur PNG si la conversion AVIF échoue
                 const mimeToFormat = {
                   'image/webp': 'WebP',
@@ -2193,8 +2090,6 @@ const PicRedux = () => {
                   'image/svg+xml': 'SVG'
                 };
                 const actualFormatName = mimeToFormat[actualMimeType] || format;
-                
-                console.warn('[AVIF Frontend] Fallback sur format:', actualFormatName);
                 
                 resolve({
                   blob,
@@ -2240,16 +2135,13 @@ const PicRedux = () => {
       if (imageUrl) {
         URL.revokeObjectURL(imageUrl);
       }
-      console.error('Erreur lors du traitement:', error);
       throw error;
     }
   };
 
   // Fonction pour sauvegarder un fichier dans le dossier source (SANS DIALOGUE)
   const saveFileToSourceFolder = async (blob, fileData, formatOverride = null, qualityOverride = null, options = {}) => {
-    // Vérifier que l'API Electron est disponible
     if (!window.electronAPI) {
-      console.warn('API Electron non disponible, fallback sur téléchargement');
       return downloadFile(blob, getOutputPreview(fileData.name, formatOverride));
     }
 
@@ -2267,8 +2159,6 @@ const PicRedux = () => {
       );
       outputDir = lastSeparator > 0 ? fileData.path.substring(0, lastSeparator) : fileData.path;
     } else {
-      // Pas de chemin disponible : fallback sur téléchargement
-      console.warn(`Chemin non disponible pour ${fileData.name}, utilisation du téléchargement`);
       return downloadFile(blob, getOutputPreview(fileData.name, formatOverride));
     }
 
@@ -2364,17 +2254,12 @@ const PicRedux = () => {
             size: result.finalSize || result.size
           };
         } else {
-          console.error('[SaveFile] Erreur lors de la sauvegarde:', result.error);
           throw new Error(result.error || 'Erreur lors de la sauvegarde');
         }
       } catch (error) {
-        console.error('Erreur lors de la sauvegarde:', error);
-        // Fallback sur téléchargement
         return downloadFile(blob, getOutputPreview(fileData.name, formatOverride));
       }
     } else {
-      // Pas de dossier disponible : fallback sur téléchargement
-      console.warn(`Dossier non disponible pour ${fileData.name}, utilisation du téléchargement`);
       return downloadFile(blob, getOutputPreview(fileData.name, formatOverride));
     }
   };
@@ -2437,8 +2322,6 @@ const PicRedux = () => {
       });
       setEstimatedSize(result.size);
     } catch (error) {
-      console.warn('Erreur estimation (utilisation du calcul théorique):', error);
-      // Fallback sur calcul théorique pour le premier fichier
       try {
         const firstFileSize = firstFile.size || 0;
         if (firstFileSize === 0) {
@@ -2460,7 +2343,6 @@ const PicRedux = () => {
         }
         setEstimatedSize(firstFileSize * qualityFactor * formatFactor * resizeFactor);
       } catch (fallbackError) {
-        console.error('Erreur dans le calcul théorique:', fallbackError);
         setEstimatedSize(0);
       }
     }
@@ -2521,7 +2403,6 @@ const PicRedux = () => {
   // Fonction pour révéler un fichier dans le Finder/Explorer
   const handleReveal = async (file) => {
     if (!file.savedPath || !window.electronAPI) {
-      console.warn('Chemin non disponible pour révéler le fichier');
       return;
     }
     
@@ -2538,7 +2419,7 @@ const PicRedux = () => {
         await window.electronAPI.openFolder(folderPath);
       }
     } catch (error) {
-      console.error('Erreur lors de la révélation du fichier:', error);
+      // Error handling
     }
   };
 
@@ -2621,10 +2502,7 @@ const PicRedux = () => {
   const handleExportAll = async () => {
     if (files.length === 0 || isProcessing) return;
     
-    // VÉRIFICATION STRICTE DU QUOTA - BLOQUAGE TOTAL
     if (!isPro && quotaUsed >= quotaLimit) {
-      console.warn('[ExportAll] ❌ BLOQUAGE : Quota atteint', quotaUsed, '/', quotaLimit);
-      // Ouvrir la modale d'activation de licence
       setShowActivationForm(true);
       return; // STOPPE TOUT ICI - Pas de compression possible
     }
@@ -2637,18 +2515,13 @@ const PicRedux = () => {
         setQuotaLimit(quota.limit || 30);
         setQuotaAllowed(quota.allowed || false);
         
-        // Vérification supplémentaire côté backend (double sécurité)
         if (!quota.allowed || (!quota.isPro && quota.count >= quota.limit)) {
-          console.warn('[ExportAll] ❌ BLOQUAGE BACKEND : Quota atteint', quota.count, '/', quota.limit);
           setShowActivationForm(true);
-          return; // STOPPE TOUT ICI
+          return;
         }
       } catch (error) {
-        console.error('[ExportAll] Erreur lors de la vérification du quota:', error);
-        // En cas d'erreur, on bloque par sécurité si on est en mode TRIAL
         if (!isPro) {
-          console.warn('[ExportAll] ❌ BLOQUAGE PAR SÉCURITÉ : Erreur de vérification quota');
-          return; // Blocage par sécurité
+          return;
         }
       }
     }
@@ -2725,7 +2598,6 @@ const PicRedux = () => {
           try {
             const quotaCheck = await window.electronAPI.checkQuota();
             if (!quotaCheck.allowed || quotaCheck.count >= quotaCheck.limit) {
-              console.warn('[ExportAll] ⚠️ QUOTA ATTEINT avant traitement. Arrêt immédiat.');
               setQuotaUsed(quotaCheck.count);
               setQuotaAllowed(false);
               // Marquer les fichiers restants (y compris celui-ci) comme non traités
@@ -2746,14 +2618,12 @@ const PicRedux = () => {
             // Mettre à jour le quota utilisé au cas où
             setQuotaUsed(quotaCheck.count);
           } catch (error) {
-            console.error('[ExportAll] Erreur lors de la vérification du quota:', error);
+            // Error handling
           }
         }
-        
-        // Double vérification avec le state (fail-safe)
+
         if (quotaUsed >= quotaLimit) {
-          console.warn('[ExportAll] ⚠️ QUOTA ATTEINT (vérification state). Arrêt immédiat.');
-          quotaLimitReached = true; // Marquer que la limite a été atteinte
+          quotaLimitReached = true;
           // ARRÊTER LA BOUCLE IMMÉDIATEMENT
           break;
         }
@@ -2911,8 +2781,7 @@ const PicRedux = () => {
             updatedFile = newFile;
             updatedPreviewUrl = URL.createObjectURL(newFile);
           } catch (error) {
-            console.warn('[ExportAll] Erreur lors de la mise à jour du File object:', error);
-            // En cas d'erreur, garder les valeurs originales
+            // Keep original values on error
           }
         }
 
@@ -2950,11 +2819,9 @@ const PicRedux = () => {
                 return finalCount;
               });
               
-              // VÉRIFICATION CRITIQUE : Arrêter immédiatement si la limite est atteinte (TRIAL uniquement)
               if (!isPro && newCount >= quotaLimit) {
-                console.warn('[ExportAll] ⚠️ LIMITE DE QUOTA ATTEINTE! Arrêt immédiat du traitement.');
                 setQuotaAllowed(false);
-                quotaLimitReached = true; // Marquer que la limite a été atteinte
+                quotaLimitReached = true;
                 // Marquer les fichiers restants comme non traités
                 const remainingFiles = files.slice(i + 1);
                 if (remainingFiles.length > 0) {
@@ -2970,8 +2837,6 @@ const PicRedux = () => {
                 break;
               }
             } else {
-              // Le backend a bloqué l'incrémentation (quota atteint)
-              console.warn('[ExportAll] ❌ Incrémentation bloquée par le backend:', quotaResult);
               if (quotaResult && quotaResult.error === 'Quota atteint') {
                 setQuotaAllowed(false);
                 quotaLimitReached = true; // Marquer que la limite a été atteinte
@@ -2991,8 +2856,6 @@ const PicRedux = () => {
               }
             }
           } catch (error) {
-            console.error('[ExportAll] Erreur lors de l\'incrémentation du quota:', error);
-            // Si l'erreur est "Quota atteint", arrêter le traitement
             if (error.message && error.message.includes('Quota atteint')) {
               setQuotaAllowed(false);
               // ARRÊTER LA BOUCLE IMMÉDIATEMENT
@@ -3000,18 +2863,10 @@ const PicRedux = () => {
             }
             // Sinon, continuer même en cas d'erreur (fail-safe)
           }
-        } else {
-          if (!window.electronAPI || !window.electronAPI.incrementQuota) {
-            console.warn('[ExportAll] API Electron ou incrementQuota non disponible');
-          }
-          if (!saveSuccess) {
-            console.warn('[ExportAll] Sauvegarde échouée, quota non incrémenté');
-          }
         }
 
         successCount++;
       } catch (error) {
-        console.error(`Erreur lors du traitement de ${fileData.name}:`, error);
         errorCount++;
 
         // Mettre à jour le statut du fichier en erreur
@@ -3048,7 +2903,7 @@ const PicRedux = () => {
           const quotaCheck = await window.electronAPI.checkQuota();
           currentQuotaUsed = quotaCheck.count || quotaUsed;
         } catch (error) {
-          console.error('[ExportAll] Erreur lors de la récupération du quota:', error);
+          // Error handling
         }
       }
       // Afficher la modale de limite de quota
@@ -3953,8 +3808,7 @@ const PicRedux = () => {
                           } else {
                             setOutputDestination('same');
                           }
-                        }).catch((error) => {
-                          console.error('Erreur lors de la sélection du dossier:', error);
+                        }).catch(() => {
                           setOutputDestination('same');
                         });
                       }

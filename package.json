@@ -1,0 +1,115 @@
+{
+  "name": "picredux",
+  "productName": "PicRedux",
+  "version": "1.0.0",
+  "description": "L'outil ultime de compression d'images pour les pros par Nebulabs.",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "author": "Nebulabs <nebulabs.hq@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NebulabsHQ/PicRedux-Releases.git"
+  },
+  "homepage": "https://nebulabs.gumroad.com",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "build": "vite build",
+    "preview": "vite preview",
+    "electron": "electron .",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "npm run build && electron .",
+    "dist": "npm run build && electron-builder",
+    "publish": "npm run build && electron-builder --publish always",
+    "postinstall": "electron-rebuild -f -w sharp",
+    "rebuild": "electron-rebuild -f -w sharp"
+  },
+  "build": {
+    "asarUnpack": [
+      "**/node_modules/sharp/**/*",
+      "**/node_modules/@img/**/*"
+    ],
+    "appId": "com.nebulabs.picredux",
+    "productName": "PicRedux",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json",
+      "node_modules/@img/**/*"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "NebulabsHQ",
+        "repo": "PicRedux-Releases"
+      }
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "electron-log": "^5.0.0",
+    "electron-store": "^11.0.2",
+    "electron-updater": "^6.1.7",
+    "lucide-react": "^0.562.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "sharp": "^0.33.5",
+    "tailwind-merge": "^3.4.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "autoprefixer": "^10.4.16",
+    "concurrently": "^8.2.2",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1",
+    "electron-rebuild": "^3.2.9",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0",
+    "vite": "^5.0.0",
+    "wait-on": "^7.2.0"
+  },
+  "optionalDependencies": {
+    "@img/sharp-darwin-x64": "^0.34.5",
+    "@img/sharp-libvips-darwin-x64": "^1.2.4"
+  }
+}

@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   RESET NATIF APP (Electron)
+   ============================================ */
+
+/* Reset global */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Body et HTML - 100% viewport, pas de scroll */
+html,
+body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  background-color: rgb(9, 9, 11); /* zinc-950 */
+}
+
+/* Conteneur racine React */
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  background-color: rgb(9, 9, 11); /* zinc-950 */
+}
+
+/* ============================================
+   SCROLLBARS PERSONNALISÉES (Webkit/Chromium)
+   ============================================ */
+
+/* Scrollbar pour Webkit (Chrome, Electron, Edge) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(39, 39, 42); /* zinc-800 */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(63, 63, 70); /* zinc-700 */
+  border-radius: 4px;
+  border: 1px solid rgb(39, 39, 42); /* zinc-800 */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(82, 82, 91); /* zinc-600 */
+}
+
+/* Scrollbar pour Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(63, 63, 70) rgb(39, 39, 42); /* thumb track */
+}
+
+/* ============================================
+   STYLES GLOBAUX SUPPLEMENTAIRES
+   ============================================ */
+
+/* Empêcher la sélection de texte par défaut (optionnel pour une app desktop) */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Réactiver la sélection pour les inputs et textareas */
+input,
+textarea,
+[contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* Améliorer le rendu des polices - Police moderne type Inter/Geist */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  font-variant-numeric: oldstyle-nums;
+}
+
+/* Désactiver les outlines par défaut (on utilisera focus:ring dans les composants) */
+*:focus {
+  outline: none;
+}
+
+/* Empêcher le drag des images par défaut */
+img {
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+/* ============================================
+   FOND DE TRANSPARENCE (CHECKERBOARD) POUR IMAGES
+   ============================================ */
+
+/* Conteneur pour les previews d'images avec fond de transparence */
+.image-preview {
+  background:
+    linear-gradient(45deg, #2b2b2b 25%, transparent 25%),
+    linear-gradient(-45deg, #2b2b2b 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #2b2b2b 75%),
+    linear-gradient(-45deg, transparent 75%, #2b2b2b 75%);
+  background-size: 12px 12px;
+  background-position: 0 0, 0 6px, 6px -6px, -6px 0px;
+  background-color: #1f1f1f;
+}
+

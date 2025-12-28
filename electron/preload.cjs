@@ -1,3 +1,4 @@
+// External libraries
 const { contextBridge, ipcRenderer } = require('electron');
 
 if (!contextBridge || !ipcRenderer) {

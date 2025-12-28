@@ -1,3 +1,4 @@
+// External libraries
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { 
@@ -25,15 +26,27 @@ import {
   Crown,
   Check
 } from 'lucide-react';
-import { useLanguage } from './useLanguage';
-import { supportedLanguages } from './translations';
-import logoApp from './assets/icon-512.png';
+
+// Internal components
 import Button from './components/ui/Button';
 import Card from './components/ui/Card';
 import Input from './components/ui/Input';
+
+// Internal utilities and hooks
 import { cn } from './utils/cn';
 import { formatFileSize as formatFileSizeUtil, getMimeType, getOptimalQuality, getOutputPreview as getOutputPreviewUtil } from './utils/formatters';
 import { useFileManagement } from './hooks/useFileManagement';
+import { useLanguage } from './useLanguage';
+import { supportedLanguages } from './translations';
+
+// Assets
+import logoApp from './assets/icon-512.png';
+
+// Constants
+const PROFILE_SHOPIFY = 'Shopify / E-commerce';
+const PROFILE_EMAIL = 'Email / Newsletter';
+const PROFILE_SOCIAL_MEDIA = 'Social Media Presets';
+const PROFILE_CUSTOM = 'Custom';
 
 /**
  * Tooltip - Composant tooltip avec Portal pour éviter les problèmes d'overflow
@@ -940,12 +953,6 @@ const PicRedux = () => {
   const licenseKeyInputRef = useRef(null);
 
   // États pour les modules de compression
-  // Utiliser des constantes pour les valeurs de profil (pas les traductions)
-  const PROFILE_SHOPIFY = 'Shopify / E-commerce';
-  const PROFILE_EMAIL = 'Email / Newsletter';
-  const PROFILE_SOCIAL_MEDIA = 'Social Media Presets';
-  const PROFILE_CUSTOM = 'Custom';
-  
   const [profile, setProfile] = useState(PROFILE_CUSTOM);
   const [compressionFormat, setCompressionFormat] = useState('WebP');
   const [compressionQuality, setCompressionQuality] = useState(80);

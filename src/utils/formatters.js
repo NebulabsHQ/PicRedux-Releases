@@ -1,6 +1,4 @@
-/**
- * Utility functions for formatting data
- */
+// Utility functions for formatting data
 
 /**
  * Format file size in bytes to human-readable string

@@ -1,3 +1,4 @@
+// External libraries
 const { app, BrowserWindow, ipcMain, dialog, shell, net } = require('electron');
 const path = require('path');
 const { existsSync, writeFileSync, readFileSync, statSync, utimesSync, unlinkSync } = require('fs');
@@ -52,10 +53,10 @@ function getPngCompressionParams(quality) {
   return { colors, dither, phase };
 }
 
-const keyPart1 = 'Nebula';
-const keyPart2 = 'Tools';
-const keyPart3 = 'x84';
-const encryptionKey = keyPart1 + keyPart2 + keyPart3;
+const KEY_PART_1 = 'Nebula';
+const KEY_PART_2 = 'Tools';
+const KEY_PART_3 = 'x84';
+const ENCRYPTION_KEY = KEY_PART_1 + KEY_PART_2 + KEY_PART_3;
 
 let store;
 let storePromise = (async () => {
@@ -63,7 +64,7 @@ let storePromise = (async () => {
   
   try {
     store = new Store({
-      encryptionKey: encryptionKey,
+      encryptionKey: ENCRYPTION_KEY,
       defaults: {
         license: {
           isPro: false,
@@ -92,7 +93,7 @@ let storePromise = (async () => {
       }
       
       store = new Store({
-        encryptionKey: encryptionKey,
+        encryptionKey: ENCRYPTION_KEY,
         defaults: {
           license: {
             isPro: false,
@@ -107,7 +108,7 @@ let storePromise = (async () => {
       try {
         store = new Store({
           name: 'config-backup',
-          encryptionKey: encryptionKey,
+          encryptionKey: ENCRYPTION_KEY,
           defaults: {
             license: {
               isPro: false,

@@ -1,4 +1,7 @@
+// External libraries
 import { useState, useEffect } from 'react';
+
+// Internal utilities
 import { getTranslations, detectLanguage } from './translations';
 
 export const useLanguage = () => {

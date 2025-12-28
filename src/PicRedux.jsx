@@ -32,6 +32,8 @@ import Button from './components/ui/Button';
 import Card from './components/ui/Card';
 import Input from './components/ui/Input';
 import { cn } from './utils/cn';
+import { formatFileSize as formatFileSizeUtil, getMimeType, getOptimalQuality, getOutputPreview as getOutputPreviewUtil } from './utils/formatters';
+import { useFileManagement } from './hooks/useFileManagement';
 
 /**
  * Tooltip - Composant tooltip avec Portal pour éviter les problèmes d'overflow
@@ -364,13 +366,6 @@ const Accordion = ({ title, icon: Icon, children, defaultOpen = true, tooltip })
  * SuccessModal - Modale de bilan après optimisation réussie
  */
 const SuccessModal = ({ isOpen, onClose, stats, onNewSession, destinationFolder, t }) => {
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return `0 ${t.units.B}`;
-    const k = 1024;
-    const sizes = [t.units.B, t.units.KB, t.units.MB, t.units.GB];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-  };
 
   const handleOpenFolder = async () => {
     if (!destinationFolder || !window.electronAPI) {
@@ -429,7 +424,7 @@ const SuccessModal = ({ isOpen, onClose, stats, onNewSession, destinationFolder,
           <div className="space-y-2">
             <div className="text-xs text-zinc-400 uppercase tracking-wide">{t.messages.gainTotal}</div>
             <div className="text-2xl font-bold text-emerald-400">
-              {formatFileSize(stats.savedSize)}
+              {formatFileSizeUtil(stats.savedSize, t.units)}
             </div>
             <div className="text-sm text-zinc-500">
               {stats.successCount} {stats.successCount === 1 ? t.messages.imageOptimized : t.messages.imagesOptimized}
@@ -662,16 +657,9 @@ const QuotaLimitModal = ({ isOpen, onClose, onUpgrade, stats, t }) => {
  * FileListItem - Ligne de fichier pour le mode liste
  */
 const FileListItem = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
+  const formatFileSize = (bytes) => formatFileSizeUtil(bytes, t.units);
   const [isHovered, setIsHovered] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
-
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return `0 ${t.units.B}`;
-    const k = 1024;
-    const sizes = [t.units.B, t.units.KB, t.units.MB, t.units.GB];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-  };
 
   const originalSize = file.size;
   const compressedSize = file.compressedSize || file.size;
@@ -782,16 +770,9 @@ const FileListItem = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
  * FileCard - Carte de fichier détaillée (nouveau design)
  */
 const FileCard = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
+  const formatFileSize = (bytes) => formatFileSizeUtil(bytes, t.units);
   const [isHovered, setIsHovered] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
-
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return `0 ${t.units.B}`;
-    const k = 1024;
-    const sizes = [t.units.B, t.units.KB, t.units.MB, t.units.GB];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-  };
 
   const originalSize = file.size;
   const compressedSize = file.compressedSize || file.size;
@@ -941,14 +922,8 @@ const PicRedux = () => {
   // Language hook
   const { language, t, changeLanguage } = useLanguage();
   
-  // Fonction pour formater la taille des fichiers selon la langue
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return `0 ${t.units.B}`;
-    const k = 1024;
-    const sizes = [t.units.B, t.units.KB, t.units.MB, t.units.GB];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-  };
+  // Format file size utility wrapper
+  const formatFileSize = (bytes) => formatFileSizeUtil(bytes, t.units);
   
   const [files, setFiles] = useState([]);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -1019,33 +994,8 @@ const PicRedux = () => {
   const [quotaLimit, setQuotaLimit] = useState(30);
   const [quotaAllowed, setQuotaAllowed] = useState(true);
 
-  // Fonction pour vérifier si un fichier est un doublon
-  const isDuplicateFile = (newFile, newFilePath, existingFiles) => {
-    // Vérifier par chemin absolu (priorité)
-    if (newFilePath) {
-      const normalizedNewPath = newFilePath.replace(/\\/g, '/');
-      const isPathDuplicate = existingFiles.some(existing => {
-        if (existing.path) {
-          const normalizedExistingPath = existing.path.replace(/\\/g, '/');
-          return normalizedExistingPath === normalizedNewPath;
-        }
-        return false;
-      });
-      if (isPathDuplicate) {
-        return true;
-      }
-    }
-    
-    // Fallback : vérifier par nom + taille
-    const isNameSizeDuplicate = existingFiles.some(existing => 
-      existing.name === newFile.name && existing.size === newFile.size
-    );
-    if (isNameSizeDuplicate) {
-      return true;
-    }
-    
-    return false;
-  };
+  // File management hook
+  const { isDuplicateFile, filteredFiles, filterStats } = useFileManagement(files, activeFilter, sortBy);
 
   // Fonction pour gérer les fichiers (Input ou Drop)
   const handleFiles = async (fileList, dataTransferItems = null) => {
@@ -1167,24 +1117,6 @@ const PicRedux = () => {
     };
     
     return presets[socialPlatform]?.[socialType] || null;
-  };
-
-  // Fonction pour obtenir la qualité optimale selon le format
-  const getOptimalQuality = (format) => {
-    switch (format) {
-      case 'WebP':
-        return 75; // Ratio idéal poids/qualité
-      case 'JPEG':
-        return 82;
-      case 'AVIF':
-        return 65;
-      case 'PNG':
-        return 80; // Compression efficace sans perte visible
-      case 'Original':
-        return 80; // Valeur par défaut pour Original
-      default:
-        return 80;
-    }
   };
 
   // Définir une qualité par défaut optimale selon le format
@@ -1324,12 +1256,15 @@ const PicRedux = () => {
       }
       
       // 3. Convertir selon le format
-      const mimeType = format === 'Original' ? (file.type || 'image/jpeg') :
-                       format === 'JPEG' ? 'image/jpeg' :
-                       format === 'PNG' ? 'image/png' :
-                       format === 'WebP' ? 'image/webp' :
-                       format === 'AVIF' ? 'image/png' : // Fallback pour AVIF (Canvas ne supporte pas AVIF)
-                       'image/jpeg';
+      let mimeType = format === 'Original' ? (file.type || 'image/jpeg') : getMimeType(format);
+      if (!mimeType) {
+        // Fallback si getMimeType retourne null
+        if (format === 'AVIF') {
+          mimeType = 'image/png'; // Fallback pour AVIF (Canvas ne supporte pas AVIF)
+        } else {
+          mimeType = 'image/jpeg';
+        }
+      }
       
       // Utiliser la qualité du slider
       const qualityValue = quality / 100;
@@ -1767,22 +1702,6 @@ const PicRedux = () => {
   };
 
   // Fonction utilitaire pour obtenir le MIME type selon le format
-  const getMimeType = (format) => {
-    switch (format) {
-      case 'AVIF':
-        return 'image/avif';
-      case 'WebP':
-        return 'image/webp';
-      case 'JPEG':
-        return 'image/jpeg';
-      case 'PNG':
-        return 'image/png';
-      case 'SVG':
-        return 'image/svg+xml';
-      default:
-        return null; // Original - garde le format d'origine
-    }
-  };
 
   // Fonction principale de traitement d'image (THE ENGINE)
   const processFile = async (fileData, config) => {
@@ -2377,28 +2296,10 @@ const PicRedux = () => {
     watermarkColor,
   ]);
 
-  // Fonction pour générer le preview du nom de fichier
+  // Generate output filename preview
   const getOutputPreview = (originalName, formatOverride = null) => {
-    const nameWithoutExt = originalName.replace(/\.[^/.]+$/, '');
     const formatToUse = formatOverride || compressionFormat;
-    let ext;
-    if (formatToUse === 'Original') {
-      ext = originalName.split('.').pop();
-    } else {
-      // Mapper les formats aux extensions correctes
-      const extensionMap = {
-        'AVIF': 'avif',
-        'avif': 'avif', // Support minuscule aussi
-        'WebP': 'webp',
-        'JPEG': 'jpg',
-        'PNG': 'png',
-        'SVG': 'svg'
-      };
-      ext = extensionMap[formatToUse] || formatToUse.toLowerCase();
-    }
-    // Ajouter préfixe et suffixe
-    const outputName = `${outputPrefix}${nameWithoutExt}${outputSuffix}.${ext}`;
-    return outputName;
+    return getOutputPreviewUtil(originalName, formatToUse, outputPrefix, outputSuffix);
   };
 
   // Fonction pour révéler un fichier dans le Finder/Explorer
@@ -2424,43 +2325,6 @@ const PicRedux = () => {
     }
   };
 
-  // Fonction pour filtrer et trier les fichiers selon l'onglet actif
-  const getFilteredFiles = () => {
-    let filtered;
-    switch (activeFilter) {
-      case 'optimized':
-        filtered = files.filter(f => f.compressed && f.status === 'done');
-        break;
-      case 'pending':
-        filtered = files.filter(f => f.status === 'pending' || f.status === 'processing');
-        break;
-      case 'errors':
-        filtered = files.filter(f => f.status === 'error');
-        break;
-      default:
-        filtered = files;
-    }
-    
-    // Appliquer le tri
-    const sorted = [...filtered].sort((a, b) => {
-      switch (sortBy) {
-        case 'name':
-          return a.name.localeCompare(b.name);
-        case 'gain':
-          const gainA = a.compressionRatio || 0;
-          const gainB = b.compressionRatio || 0;
-          return gainB - gainA; // Tri décroissant
-        case 'size':
-          const sizeA = a.compressedSize || a.size;
-          const sizeB = b.compressedSize || b.size;
-          return sizeA - sizeB; // Tri croissant
-        default:
-          return 0;
-      }
-    });
-    
-    return sorted;
-  };
 
   // Fonction pour gérer le logo du filigrane
   const handleLogoUpload = (e) => {
@@ -2491,13 +2355,6 @@ const PicRedux = () => {
     setFiles([]);
   };
 
-  // Calcul des stats pour les filtres
-  const filterStats = {
-    all: files.length,
-    optimized: files.filter(f => f.compressed && f.status === 'done').length,
-    pending: files.filter(f => f.status === 'pending' || f.status === 'processing').length,
-    errors: files.filter(f => f.status === 'error').length,
-  };
 
   // Fonction pour exporter tout (BATCH PROCESSING - TOUTES LES IMAGES)
   const handleExportAll = async () => {
@@ -3981,7 +3838,7 @@ const PicRedux = () => {
             </div>
             
             {/* Sélecteur de layout et menu de tri */}
-            {getFilteredFiles().length > 0 && (
+            {filteredFiles.length > 0 && (
               <div className="flex items-center gap-3">
                 {/* Sélecteur de layout */}
                 <div className="flex items-center gap-1 border-r border-zinc-800 pr-3">
@@ -4043,7 +3900,7 @@ const PicRedux = () => {
 
         {/* Zone de contenu */}
         <div className="flex-1 overflow-auto">
-          {getFilteredFiles().length === 0 ? (
+          {filteredFiles.length === 0 ? (
             /* Empty State avec drag & drop - Design minimaliste */
             <div 
               className="h-full flex items-center justify-center p-8"
@@ -4068,7 +3925,7 @@ const PicRedux = () => {
             /* Grille de cartes responsive avec animation cascade */
             <div className="p-4 transition-opacity duration-300">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                {getFilteredFiles().map((file, index) => (
+                {filteredFiles.map((file, index) => (
                   <div
                     key={file.id}
                     style={{
@@ -4090,7 +3947,7 @@ const PicRedux = () => {
             /* Mode liste avec lignes horizontales */
             <div className="transition-opacity duration-300">
               <div className="divide-y divide-zinc-800/50">
-                {getFilteredFiles().map((file, index) => (
+                {filteredFiles.map((file, index) => (
                   <div
                     key={file.id}
                     className="group"

@@ -918,7 +918,7 @@ const PicRedux = () => {
   const licenseKeyInputRef = useRef(null);
 
   const [profile, setProfile] = useState(PROFILE_CUSTOM);
-  const [compressionFormat, setCompressionFormat] = useState('WebP');
+  const [compressionFormat, setCompressionFormat] = useState('Original');
   const [compressionQuality, setCompressionQuality] = useState(80);
   const [outputPrefix, setOutputPrefix] = useState('');
   const [outputSuffix, setOutputSuffix] = useState('_optimized');
@@ -2241,10 +2241,28 @@ const PicRedux = () => {
     let totalCompressedSize = 0;
     let firstDestinationFolder = null;
     let quotaLimitReached = false;
-    const totalFiles = files.length;
+    
+    const sortedFiles = [...files].sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.name.localeCompare(b.name);
+        case 'gain':
+          const gainA = a.compressionRatio || 0;
+          const gainB = b.compressionRatio || 0;
+          return gainB - gainA;
+        case 'size':
+          const sizeA = a.compressedSize || a.size;
+          const sizeB = b.compressedSize || b.size;
+          return sizeA - sizeB;
+        default:
+          return 0;
+      }
+    });
+    
+    const totalFiles = sortedFiles.length;
 
     for (let i = 0; i < totalFiles; i++) {
-      const fileData = files[i];
+      const fileData = sortedFiles[i];
       
       if (!isPro) {
         if (window.electronAPI && window.electronAPI.checkQuota) {
@@ -2254,7 +2272,7 @@ const PicRedux = () => {
               setQuotaUsed(quotaCheck.count);
               setQuotaAllowed(false);
               quotaLimitReached = true;
-              const remainingFiles = files.slice(i);
+              const remainingFiles = sortedFiles.slice(i);
               if (remainingFiles.length > 0) {
                 setFiles(prev => prev.map(f => {
                   const isRemaining = remainingFiles.some(rf => rf.id === f.id);
@@ -2433,7 +2451,7 @@ const PicRedux = () => {
               if (!isPro && newCount >= quotaLimit) {
                 setQuotaAllowed(false);
                 quotaLimitReached = true;
-                const remainingFiles = files.slice(i + 1);
+                const remainingFiles = sortedFiles.slice(i + 1);
                 if (remainingFiles.length > 0) {
                   setFiles(prev => prev.map(f => {
                     const isRemaining = remainingFiles.some(rf => rf.id === f.id);
@@ -2449,7 +2467,7 @@ const PicRedux = () => {
               if (quotaResult && quotaResult.error === 'Quota atteint') {
                 setQuotaAllowed(false);
                 quotaLimitReached = true;
-                const remainingFiles = files.slice(i + 1);
+                const remainingFiles = sortedFiles.slice(i + 1);
                 if (remainingFiles.length > 0) {
                   setFiles(prev => prev.map(f => {
                     const isRemaining = remainingFiles.some(rf => rf.id === f.id);

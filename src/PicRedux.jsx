@@ -971,25 +971,65 @@ const PicRedux = () => {
         const file = filesArray[index];
         let filePath = null;
 
-        // Electron drag & drop provides 'path' property, but spread operator doesn't copy it
-        if (file.path) {
+        // CRITICAL: Use webUtils.getPathForFile() to get the real absolute path
+        // This is the proper Electron API - file.path can be stripped or incorrect
+        // Note: getPathForFile returns a Promise, so we need to await it
+        if (window.electronAPI && window.electronAPI.getPathForFile) {
+          try {
+            // getPathForFile returns a Promise
+            const resolvedPath = await window.electronAPI.getPathForFile(file);
+            if (resolvedPath) {
+              filePath = resolvedPath;
+              console.log('[handleFiles] Resolved Path (from webUtils.getPathForFile):', filePath, 'for file:', file.name);
+            }
+          } catch (error) {
+            console.warn('[handleFiles] Error calling getPathForFile:', error);
+          }
+        }
+        
+        // Fallback 1: Try file.path if webUtils didn't work
+        if (!filePath && file.path) {
           filePath = file.path;
-        } else if (dataTransferItems && dataTransferItems[index]) {
+          console.log('[handleFiles] Fallback: Using file.path:', filePath, 'for file:', file.name);
+        }
+        
+        // Fallback 2: Try dataTransferItems if available
+        if (!filePath && dataTransferItems && dataTransferItems[index]) {
           const item = dataTransferItems[index];
           if (item.getAsFileSystemEntry) {
             const entry = item.getAsFileSystemEntry();
             if (entry && entry.fullPath) {
               filePath = entry.fullPath;
+              console.log('[handleFiles] Fallback: Path from getAsFileSystemEntry:', filePath);
             }
           } else if (item.webkitGetAsEntry) {
             const entry = item.webkitGetAsEntry();
             if (entry && entry.fullPath) {
               filePath = entry.fullPath;
+              console.log('[handleFiles] Fallback: Path from webkitGetAsEntry:', filePath);
             }
           }
         }
+        
+        // Log the resolved path as requested
+        console.log('[handleFiles] Resolved Path:', filePath);
+        
+        // Validate path format
+        if (filePath) {
+          // Check if path is absolute (starts with / on Unix/Mac, or has drive letter on Windows)
+          const isAbsolute = filePath.startsWith('/') || /^[A-Za-z]:\\/.test(filePath);
+          if (!isAbsolute) {
+            console.error('[handleFiles] ERROR: Path is not absolute! Path:', filePath, 'for file:', file.name);
+            console.error('[handleFiles] This will cause save failures. Path should be absolute like /Users/User/Downloads/file.png');
+          } else {
+            console.log('[handleFiles] ✓ Valid absolute path:', filePath);
+          }
+        } else {
+          console.error('[handleFiles] ERROR: No path found for file:', file.name);
+        }
 
         if (isDuplicateFile(file, filePath, files) || isDuplicateFile(file, filePath, newFiles)) {
+          console.log('[handleFiles] Skipping duplicate file:', file.name);
           continue;
         }
 
@@ -997,6 +1037,7 @@ const PicRedux = () => {
         try {
           previewUrl = URL.createObjectURL(file);
         } catch (urlError) {
+          console.error('[handleFiles] Failed to create preview URL:', urlError);
           continue;
         }
 
@@ -1019,9 +1060,16 @@ const PicRedux = () => {
       }
 
       if (newFiles.length > 0) {
+        console.log('[handleFiles] Adding', newFiles.length, 'files to state');
         setFiles(prev => [...prev, ...newFiles]);
+      } else {
+        console.warn('[handleFiles] No new files to add');
       }
     } catch (error) {
+      console.error('[handleFiles] Error processing files:', {
+        error: error.message,
+        stack: error.stack
+      });
     }
   };
 
@@ -1563,14 +1611,14 @@ const PicRedux = () => {
       
       const timeout = setTimeout(() => {
         URL.revokeObjectURL(imageUrl);
-        reject(new Error('Timeout lors du chargement de l\'image'));
+        reject(new Error('Timeout loading image'));
       }, 30000);
       
       img.onload = () => {
         clearTimeout(timeout);
         if (img.width === 0 || img.height === 0) {
           URL.revokeObjectURL(imageUrl);
-          reject(new Error('Image invalide : dimensions nulles'));
+          reject(new Error('Invalid image: null dimensions'));
           return;
         }
         resolve(img);
@@ -1579,7 +1627,7 @@ const PicRedux = () => {
       img.onerror = (error) => {
         clearTimeout(timeout);
         URL.revokeObjectURL(imageUrl);
-        reject(new Error(`Impossible de charger l'image: ${file.name}`));
+        reject(new Error(`Unable to load image: ${file.name}`));
       };
       
       img.src = imageUrl;
@@ -1893,13 +1941,26 @@ const PicRedux = () => {
   };
 
   const saveFileToSourceFolder = async (blob, fileData, formatOverride = null, qualityOverride = null, options = {}) => {
+    console.log('[saveFileToSourceFolder] Starting save operation', {
+      fileName: fileData.name,
+      formatOverride,
+      hasBlob: !!blob,
+      blobSize: blob?.size,
+      hasElectronAPI: !!window.electronAPI,
+      outputDestination,
+      customOutputFolder,
+      fileDataPath: fileData.path
+    });
+
     if (!window.electronAPI) {
+      console.warn('[saveFileToSourceFolder] Electron API not available, falling back to download');
       return downloadFile(blob, getOutputPreview(fileData.name, formatOverride));
     }
 
     let outputDir;
     if (outputDestination === 'custom' && customOutputFolder) {
       outputDir = customOutputFolder;
+      console.log('[saveFileToSourceFolder] Using custom output folder:', outputDir);
     } else if (fileData.path) {
       const pathSeparator = fileData.path.includes('\\') ? '\\' : '/';
       const lastSeparator = Math.max(
@@ -1907,7 +1968,9 @@ const PicRedux = () => {
         fileData.path.lastIndexOf('\\')
       );
       outputDir = lastSeparator > 0 ? fileData.path.substring(0, lastSeparator) : fileData.path;
+      console.log('[saveFileToSourceFolder] Using source folder:', outputDir);
     } else {
+      console.warn('[saveFileToSourceFolder] No file path available, falling back to download');
       return downloadFile(blob, getOutputPreview(fileData.name, formatOverride));
     }
 
@@ -1923,9 +1986,11 @@ const PicRedux = () => {
         }
         
         const outputPath = `${outputDir}${pathSeparator}${finalOutputFilename}`;
+        console.log('[saveFileToSourceFolder] Output path:', outputPath);
 
         const arrayBuffer = await blob.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
+        console.log('[saveFileToSourceFolder] Blob converted to array, size:', uint8Array.length);
 
         let qualityToUse = qualityOverride !== null ? qualityOverride : compressionQuality;
         if (formatOverride === 'AVIF' || formatOverride === 'avif') {
@@ -1934,8 +1999,8 @@ const PicRedux = () => {
         
         const keepMetadata = !removeMetadata;
         const inputPath = fileData.path || fileData.originalPath || null;
+        console.log('[saveFileToSourceFolder] Input path:', inputPath);
         
- (resize, fill, watermark)
         const backendOptions = {};
         
         if (resizeMode === 'dimensions' && (resizeWidth || resizeHeight)) {
@@ -1974,6 +2039,15 @@ const PicRedux = () => {
           }
         }
         
+        console.log('[saveFileToSourceFolder] Calling electronAPI.saveFile with:', {
+          outputPath,
+          formatOverride,
+          qualityToUse,
+          keepMetadata,
+          inputPath,
+          hasBackendOptions: Object.keys(backendOptions).length > 0
+        });
+
         const result = await window.electronAPI.saveFile(
           Array.from(uint8Array), 
           outputPath,
@@ -1985,7 +2059,10 @@ const PicRedux = () => {
           backendOptions
         );
         
+        console.log('[saveFileToSourceFolder] Save result:', result);
+        
         if (result.success) {
+          console.log('[saveFileToSourceFolder] File saved successfully:', result.path);
           return {
             success: true,
             path: result.path,
@@ -1993,12 +2070,21 @@ const PicRedux = () => {
             size: result.finalSize || result.size
           };
         } else {
-          throw new Error(result.error || 'Erreur lors de la sauvegarde');
+          const errorMsg = result.error || 'Error saving file';
+          console.error('[saveFileToSourceFolder] Save failed:', errorMsg, result);
+          throw new Error(`Save failed: ${errorMsg}`);
         }
       } catch (error) {
-        return downloadFile(blob, getOutputPreview(fileData.name, formatOverride));
+        console.error('[saveFileToSourceFolder] Exception during save:', {
+          error: error.message,
+          stack: error.stack,
+          fileName: fileData.name,
+          outputDir
+        });
+        throw new Error(`Failed to save file "${fileData.name}": ${error.message}`);
       }
     } else {
+      console.warn('[saveFileToSourceFolder] No output directory, falling back to download');
       return downloadFile(blob, getOutputPreview(fileData.name, formatOverride));
     }
   };
@@ -2345,7 +2431,11 @@ const PicRedux = () => {
           }
         }
         
+        console.log('[handleExportAll] Processing file:', fileData.name, 'Format:', result.actualFormat);
+        
         const saveResult = await saveFileToSourceFolder(result.blob, fileData, result.actualFormat, config.quality, backendOptions);
+
+        console.log('[handleExportAll] Save result for', fileData.name, ':', saveResult);
 
         const savedPath = (saveResult && saveResult.path) ? saveResult.path : (typeof saveResult === 'string' ? saveResult : null);
 
@@ -2355,8 +2445,18 @@ const PicRedux = () => {
         );
 
         if (!saveSuccess) {
-          throw new Error('File save failed');
+          const errorDetails = {
+            saveResult,
+            savedPath,
+            fileName: fileData.name,
+            hasBlob: !!result.blob,
+            blobSize: result.blob?.size
+          };
+          console.error('[handleExportAll] File save failed:', errorDetails);
+          throw new Error(`File save failed for "${fileData.name}". Save result: ${JSON.stringify(saveResult)}`);
         }
+        
+        console.log('[handleExportAll] File saved successfully:', savedPath);
 
         const originalSize = fileData.size;
         const compressedSize = (saveResult && typeof saveResult === 'object' && (saveResult.finalSize || saveResult.size)) 
@@ -2464,7 +2564,7 @@ const PicRedux = () => {
                 break;
               }
             } else {
-              if (quotaResult && quotaResult.error === 'Quota atteint') {
+              if (quotaResult && quotaResult.error === 'Quota reached') {
                 setQuotaAllowed(false);
                 quotaLimitReached = true;
                 const remainingFiles = sortedFiles.slice(i + 1);
@@ -2481,7 +2581,7 @@ const PicRedux = () => {
               }
             }
           } catch (error) {
-            if (error.message && error.message.includes('Quota atteint')) {
+            if (error.message && error.message.includes('Quota reached')) {
               setQuotaAllowed(false);
               break;
             }
@@ -2489,15 +2589,24 @@ const PicRedux = () => {
         }
 
         successCount++;
+        console.log('[handleExportAll] Successfully processed file:', fileData.name, `(${successCount}/${totalFiles})`);
       } catch (error) {
         errorCount++;
+
+        const errorMessage = error.message || 'Error processing file';
+        console.error('[handleExportAll] Error processing file:', fileData.name, {
+          error: errorMessage,
+          stack: error.stack,
+          fileName: fileData.name,
+          fileId: fileData.id
+        });
 
         setFiles(prev => prev.map(f => 
           f.id === fileData.id 
             ? { 
                 ...f, 
                 status: 'error',
-                error: error.message || 'Erreur lors du traitement'
+                error: errorMessage
               }
             : f
         ));
@@ -3757,4 +3866,5 @@ const PicRedux = () => {
 };
 
 export default PicRedux;
+
 

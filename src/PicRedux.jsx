@@ -483,50 +483,38 @@ const QuotaWidget = ({ quotaUsed, quotaLimit, onUpgrade, t }) => {
   const isNearLimit = quotaUsed >= quotaLimit * 0.8;
 
   return (
-    <Card variant="subtle" className="mt-3 p-3 no-drag">
-      {/* Titre */}
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-medium text-zinc-400">{t.sidebar.freeTrial}</span>
-        <span className={cn(
-          "text-xs font-bold tabular-nums",
-          isLimitReached ? "text-red-400" : isNearLimit ? "text-amber-400" : "text-zinc-300"
-        )}>
-          {quotaUsed}/{quotaLimit}
+    <div className="mt-3 rounded-lg bg-white/5 p-3 flex flex-row items-center justify-between gap-3 no-drag">
+      {/* Left Side - Info */}
+      <div className="flex flex-col flex-1">
+        <span className="text-xs text-zinc-400">
+          {t.sidebar.freeTrial} : {quotaUsed}/{quotaLimit}
         </span>
+        {/* Progress bar with visible track */}
+        <div className="relative w-full h-1.5 bg-white/10 rounded-full overflow-hidden mt-1.5">
+          <div
+            className={cn(
+              "h-full rounded-full transition-all duration-300 ease-out",
+              isLimitReached 
+                ? "bg-red-500" 
+                : isNearLimit
+                ? "bg-amber-500"
+                : "bg-violet-500"
+            )}
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
       </div>
 
-      {/* Barre de progression */}
-      <div className="relative w-full h-2 bg-zinc-800 rounded-full overflow-hidden mb-2">
-        <div
-          className={cn(
-            "h-full rounded-full transition-all duration-300 ease-out",
-            isLimitReached 
-              ? "bg-gradient-to-r from-red-600 to-red-500" 
-              : isNearLimit
-              ? "bg-gradient-to-r from-amber-600 to-amber-500"
-              : "bg-gradient-to-r from-violet-600 to-violet-500"
-          )}
-          style={{ width: `${percentage}%` }}
-        />
-      </div>
-
-      {/* Message d'avertissement ou bouton d'upgrade */}
-      {isLimitReached ? (
-        <p className="text-[10px] text-red-400 font-medium text-center">
-          {t.sidebar.limitReachedActivateLicense}
-        </p>
-      ) : isNearLimit ? (
-        <Button
-          onClick={onUpgrade}
-          variant="secondary"
-          size="xs"
-          className="w-full mt-1 no-drag"
-        >
-          <Zap className="w-3 h-3" />
-          {t.sidebar.unlockUnlimited}
-        </Button>
-      ) : null}
-    </Card>
+      {/* Right Side - Action Button */}
+      <Button
+        onClick={onUpgrade}
+        variant="secondary"
+        size="xs"
+        className="no-drag flex-shrink-0"
+      >
+        {t.sidebar.activate}
+      </Button>
+    </div>
   );
 };
 
@@ -617,6 +605,130 @@ const QuotaLimitModal = ({ isOpen, onClose, onUpgrade, stats, t }) => {
       </Card>
 
       {/* Styles pour les animations (réutilisés de SuccessModal) */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+    </div>,
+    document.body
+  );
+};
+
+/**
+ * ActivationLicenseModal - Modale pour activer la licence
+ */
+const ActivationLicenseModal = ({ isOpen, onClose, licenseKey, setLicenseKey, handleActivation, isActivating, activationError, activationSuccess, licenseKeyInputRef, t }) => {
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+      style={{
+        animation: 'fadeIn 0.2s ease-out'
+      }}
+    >
+      <Card
+        variant="elevated"
+        className="max-w-md w-full p-6 space-y-4"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          animation: 'slideUp 0.3s ease-out'
+        }}
+      >
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-full bg-violet-600/20 flex items-center justify-center">
+            <Zap className="text-violet-400" size={24} />
+          </div>
+          <h2 className="text-xl font-semibold text-zinc-200">{t.sidebar.activateLicense}</h2>
+          <button
+            onClick={onClose}
+            className="ml-auto text-zinc-400 hover:text-zinc-200 transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Formulaire */}
+        <div className="space-y-3">
+          <Input
+            ref={licenseKeyInputRef}
+            type="text"
+            value={licenseKey}
+            onChange={(e) => setLicenseKey(e.target.value)}
+            placeholder={t.sidebar.enterLicenseKey}
+            size="sm"
+            className="w-full no-drag"
+            disabled={isActivating}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !isActivating) {
+                handleActivation();
+              }
+            }}
+          />
+          {activationError && (
+            <div className="flex items-start gap-2 p-2 rounded-md bg-red-500/10 border border-red-500/20">
+              <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-red-400 flex-1">{activationError}</p>
+            </div>
+          )}
+          {activationSuccess && (
+            <div className="flex items-start gap-2 p-2 rounded-md bg-emerald-500/10 border border-emerald-500/20">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-emerald-400 flex-1">{t.sidebar.licenseActivated}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Divider */}
+        <div className="border-t border-zinc-800"></div>
+
+        {/* Boutons d'action */}
+        <div className="flex flex-col gap-2">
+          <Button
+            onClick={handleActivation}
+            disabled={isActivating || !licenseKey.trim()}
+            variant="primary"
+            size="lg"
+            className="w-full"
+          >
+            {isActivating ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                {t.sidebar.verifying}
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="w-4 h-4" />
+                {t.sidebar.activate}
+              </>
+            )}
+          </Button>
+          <a
+            href="https://nebulatools.gumroad.com/l/nvwwb"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block text-center text-xs text-violet-400 hover:text-violet-300 underline"
+          >
+            {t.sidebar.getLicense}
+          </a>
+        </div>
+      </Card>
+
+      {/* Styles pour les animations */}
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; }
@@ -2763,96 +2875,6 @@ const PicRedux = () => {
               <span className="text-xs font-medium text-violet-300">{t.sidebar.licenseActive}</span>
             </div>
           )}
-          
-          {/* Formulaire d'activation - visible uniquement en mode TRIAL, en bas du logo */}
-          {!isPro && (
-            <div className="space-y-2 no-drag">
-              {!showActivationForm ? (
-                <Button
-                  onClick={() => setShowActivationForm(true)}
-                  variant="ghost"
-                  size="sm"
-                  className="w-full no-drag"
-                >
-                  <Zap className="w-3 h-3" />
-                  {t.sidebar.activateLicense}
-                </Button>
-              ) : (
-                <div className="space-y-2">
-                  <Input
-                    ref={licenseKeyInputRef}
-                    type="text"
-                    value={licenseKey}
-                    onChange={(e) => setLicenseKey(e.target.value)}
-                    placeholder={t.sidebar.enterLicenseKey}
-                    size="sm"
-                    className="w-full no-drag"
-                    disabled={isActivating}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !isActivating) {
-                        handleActivation();
-                      }
-                    }}
-                  />
-                  {activationError && (
-                    <div className="flex items-start gap-2 p-2 rounded-md bg-red-500/10 border border-red-500/20">
-                      <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
-                      <p className="text-xs text-red-400 flex-1">{activationError}</p>
-                    </div>
-                  )}
-                  {activationSuccess && (
-                    <div className="flex items-start gap-2 p-2 rounded-md bg-emerald-500/10 border border-emerald-500/20">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                      <p className="text-xs text-emerald-400 flex-1">{t.sidebar.licenseActivated}</p>
-                    </div>
-                  )}
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={handleActivation}
-                      disabled={isActivating || !licenseKey.trim()}
-                      variant="primary"
-                      size="sm"
-                      className="flex-1 no-drag"
-                    >
-                      {isActivating ? (
-                        <>
-                          <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          {t.sidebar.verifying}
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle2 className="w-3 h-3" />
-                          {t.sidebar.activate}
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        setShowActivationForm(false);
-                        setActivationError(null);
-                        setActivationSuccess(false);
-                        setLicenseKey('');
-                      }}
-                      disabled={isActivating}
-                      variant="ghost"
-                      size="sm"
-                      className="no-drag"
-                    >
-                      <X className="w-3 h-3" />
-                    </Button>
-                  </div>
-                  <a
-                    href="https://nebulatools.gumroad.com/l/nvwwb"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-center text-xs text-violet-400 hover:text-violet-300 underline no-drag"
-                  >
-                    {t.sidebar.getLicense}
-                  </a>
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Séparateur visuel après le header */}
@@ -3560,45 +3582,33 @@ const PicRedux = () => {
 
         {/* Bouton "Lancer l'optimisation" fixé en bas */}
         <div className="p-4 border-t border-zinc-800 bg-zinc-900">
-          {!isPro && quotaUsed >= quotaLimit ? (
-            <Button
-              onClick={() => setShowActivationForm(true)}
-              variant="ghost"
-              size="md"
-              className="w-full"
-            >
-              <Lock size={16} />
-              {t.sidebar.limitReachedActivateLicenseButton}
-            </Button>
-          ) : (
-            <Button
-              onClick={handleExportAll}
-              disabled={files.length === 0 || isProcessing || (!isPro && quotaUsed >= quotaLimit)}
-              variant="primary"
-              size="lg"
-              className="w-full"
-            >
-              {isProcessing ? (
-                <>
-                  <Zap size={18} className="animate-pulse" />
-                  {t.messages.processing}
-                </>
-              ) : files.length > 0 ? (
-                <>
-                  <Play size={18} />
-                  {files.length === 1 
-                    ? t.sidebar.optimizeFiles.replace('{count}', files.length)
-                    : t.sidebar.optimizeFilesPlural.replace('{count}', files.length)
-                  }
-                </>
-              ) : (
-                <>
-                  <Play size={18} />
-                  {t.main.readyForOptimization}
-                </>
-              )}
-            </Button>
-          )}
+          <Button
+            onClick={handleExportAll}
+            disabled={files.length === 0 || isProcessing || (!isPro && quotaUsed >= quotaLimit)}
+            variant="primary"
+            size="lg"
+            className="w-full"
+          >
+            {isProcessing ? (
+              <>
+                <Zap size={18} className="animate-pulse" />
+                {t.messages.processing}
+              </>
+            ) : files.length > 0 ? (
+              <>
+                <Play size={18} />
+                {files.length === 1 
+                  ? t.sidebar.optimizeFiles.replace('{count}', files.length)
+                  : t.sidebar.optimizeFilesPlural.replace('{count}', files.length)
+                }
+              </>
+            ) : (
+              <>
+                <Play size={18} />
+                {t.main.readyForOptimization}
+              </>
+            )}
+          </Button>
           
           {/* Sélecteur de langue */}
           <div className="mt-3 pt-3 border-t border-zinc-800">
@@ -3859,6 +3869,25 @@ const PicRedux = () => {
           setShowActivationForm(true);
         }}
         stats={quotaLimitStats}
+        t={t}
+      />
+
+      {/* Modale d'activation de licence */}
+      <ActivationLicenseModal
+        isOpen={showActivationForm}
+        onClose={() => {
+          setShowActivationForm(false);
+          setActivationError(null);
+          setActivationSuccess(false);
+          setLicenseKey('');
+        }}
+        licenseKey={licenseKey}
+        setLicenseKey={setLicenseKey}
+        handleActivation={handleActivation}
+        isActivating={isActivating}
+        activationError={activationError}
+        activationSuccess={activationSuccess}
+        licenseKeyInputRef={licenseKeyInputRef}
         t={t}
       />
     </>

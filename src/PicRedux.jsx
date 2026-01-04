@@ -246,7 +246,7 @@ const Tooltip = ({ children, content, position = 'right' }) => {
 };
 
 /**
- * IconButton - Bouton avec icône et tooltip optionnel
+ * IconButton - Button with icon and optional tooltip
  */
 const IconButton = ({ 
   icon: Icon, 
@@ -278,7 +278,7 @@ const IconButton = ({
 };
 
 /**
- * SectionTitle - Titre de section en uppercase
+ * SectionTitle - Section title in uppercase
  */
 const SectionTitle = ({ children, className }) => {
   return (
@@ -293,7 +293,7 @@ const SectionTitle = ({ children, className }) => {
 };
 
 /**
- * Badge - Badge stylisé
+ * Badge - Styled badge component
  */
 const Badge = ({ children, variant = "default", className }) => {
   const variants = {
@@ -316,7 +316,7 @@ const Badge = ({ children, variant = "default", className }) => {
 };
 
 /**
- * Accordion - Section pliable avec tooltip
+ * Accordion - Collapsible section with tooltip
  */
 const Accordion = ({ title, icon: Icon, children, defaultOpen = true, tooltip }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -354,7 +354,7 @@ const Accordion = ({ title, icon: Icon, children, defaultOpen = true, tooltip })
 };
 
 /**
- * SuccessModal - Modale de bilan après optimisation réussie
+ * SuccessModal - Modal displayed after successful optimization
  */
 const SuccessModal = ({ isOpen, onClose, stats, onNewSession, destinationFolder, t }) => {
 
@@ -393,7 +393,6 @@ const SuccessModal = ({ isOpen, onClose, stats, onNewSession, destinationFolder,
           animation: 'slideUp 0.3s ease-out'
         }}
       >
-        {/* Header avec icône */}
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center">
             <PartyPopper className="text-purple-400" size={24} />
@@ -407,7 +406,6 @@ const SuccessModal = ({ isOpen, onClose, stats, onNewSession, destinationFolder,
           </button>
         </div>
 
-        {/* Zone de Stats - Big Number Design */}
         <div className="bg-zinc-800/50 rounded-md p-4 my-4">
           <div className="space-y-2">
             <div className="text-xs text-zinc-400 uppercase tracking-wide">{t.messages.gainTotal}</div>
@@ -420,7 +418,6 @@ const SuccessModal = ({ isOpen, onClose, stats, onNewSession, destinationFolder,
           </div>
         </div>
 
-        {/* Boutons d'action */}
         <div className="flex flex-col gap-2">
           {!isFolderButtonDisabled && (
             <Button
@@ -445,7 +442,6 @@ const SuccessModal = ({ isOpen, onClose, stats, onNewSession, destinationFolder,
         </div>
       </Card>
 
-      {/* Styles pour les animations */}
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; }
@@ -478,7 +474,7 @@ const SuccessModal = ({ isOpen, onClose, stats, onNewSession, destinationFolder,
 };
 
 /**
- * QuotaWidget - Widget élégant pour afficher le quota de compression
+ * QuotaWidget - Widget to display compression quota
  */
 const QuotaWidget = ({ quotaUsed, quotaLimit, onUpgrade, t }) => {
   const percentage = Math.min((quotaUsed / quotaLimit) * 100, 100);
@@ -522,7 +518,7 @@ const QuotaWidget = ({ quotaUsed, quotaLimit, onUpgrade, t }) => {
 };
 
 /**
- * QuotaLimitModal - Modale affichée quand la limite de quota est atteinte
+ * QuotaLimitModal - Modal displayed when quota limit is reached
  */
 const QuotaLimitModal = ({ isOpen, onClose, onUpgrade, stats, t }) => {
   if (!isOpen) return null;
@@ -543,7 +539,6 @@ const QuotaLimitModal = ({ isOpen, onClose, onUpgrade, stats, t }) => {
           animation: 'slideUp 0.3s ease-out'
         }}
       >
-        {/* Header avec icône */}
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-amber-600/20 flex items-center justify-center">
             <Lock className="text-amber-400" size={24} />
@@ -557,14 +552,12 @@ const QuotaLimitModal = ({ isOpen, onClose, onUpgrade, stats, t }) => {
           </button>
         </div>
 
-        {/* Message d'information */}
         <div className="py-2">
           <p className="text-sm text-zinc-400 leading-relaxed">
             {t.sidebar.trialLimitReachedMessage.replace('{limit}', stats.quotaLimit)}
           </p>
         </div>
 
-        {/* Statistiques */}
         <div className="space-y-3 py-2 bg-zinc-800/50 rounded-lg px-4">
           <div className="flex items-center justify-between">
             <span className="text-sm text-zinc-400">{t.sidebar.optimizedImages}</span>
@@ -582,10 +575,8 @@ const QuotaLimitModal = ({ isOpen, onClose, onUpgrade, stats, t }) => {
           </div>
         </div>
 
-        {/* Divider */}
         <div className="border-t border-zinc-800"></div>
 
-        {/* Boutons d'action */}
         <div className="flex flex-col gap-2">
           <Button
             onClick={onUpgrade}
@@ -607,7 +598,6 @@ const QuotaLimitModal = ({ isOpen, onClose, onUpgrade, stats, t }) => {
         </div>
       </Card>
 
-      {/* Styles pour les animations (réutilisés de SuccessModal) */}
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; }
@@ -630,7 +620,7 @@ const QuotaLimitModal = ({ isOpen, onClose, onUpgrade, stats, t }) => {
 };
 
 /**
- * ActivationLicenseModal - Modale pour activer la licence
+ * ActivationLicenseModal - Modal for license activation
  */
 const ActivationLicenseModal = ({ isOpen, onClose, licenseKey, setLicenseKey, handleActivation, isActivating, activationError, activationSuccess, licenseKeyInputRef, t }) => {
   if (!isOpen) return null;
@@ -665,7 +655,6 @@ const ActivationLicenseModal = ({ isOpen, onClose, licenseKey, setLicenseKey, ha
           </button>
         </div>
 
-        {/* Formulaire */}
         <div className="space-y-3">
           <Input
             ref={licenseKeyInputRef}
@@ -696,10 +685,8 @@ const ActivationLicenseModal = ({ isOpen, onClose, licenseKey, setLicenseKey, ha
           )}
         </div>
 
-        {/* Divider */}
         <div className="border-t border-zinc-800"></div>
 
-        {/* Boutons d'action */}
         <div className="flex flex-col gap-2">
           <Button
             onClick={handleActivation}
@@ -731,7 +718,6 @@ const ActivationLicenseModal = ({ isOpen, onClose, licenseKey, setLicenseKey, ha
         </div>
       </Card>
 
-      {/* Styles pour les animations */}
       <style>{`
         @keyframes fadeIn {
           from { opacity: 0; }
@@ -754,7 +740,7 @@ const ActivationLicenseModal = ({ isOpen, onClose, licenseKey, setLicenseKey, ha
 };
 
 /**
- * FileListItem - Ligne de fichier pour le mode liste
+ * FileListItem - File list item for list view
  */
 const FileListItem = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
   const formatFileSize = (bytes) => formatFileSizeUtil(bytes, t.units);
@@ -784,11 +770,9 @@ const FileListItem = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
         transition: isRemoving ? 'opacity 0.1s ease-out' : undefined
       }}
     >
-      {/* Thumbnail carré 40x40px */}
       <div className="relative w-10 h-10 rounded image-preview border border-zinc-800 overflow-hidden flex-shrink-0">
         {file.previewUrl ? (
           <>
-            {/* Image compressée (par défaut) */}
             <img
               src={compressedThumbnail || file.previewUrl}
               alt={file.name}
@@ -797,7 +781,6 @@ const FileListItem = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
                 isHovered ? "opacity-0" : "opacity-100"
               )}
             />
-            {/* Image originale (au survol) */}
             <img
               src={file.previewUrl}
               alt={file.name}
@@ -808,21 +791,18 @@ const FileListItem = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
             />
           </>
         ) : (
-          /* Fallback icon for HEIC/TIFF files that can't be previewed */
           <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
             <ImageIcon size={20} className="text-zinc-500" />
           </div>
         )}
       </div>
 
-      {/* Nom du fichier - Plus de place */}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-zinc-200 truncate">
           {file.name}
         </p>
       </div>
 
-      {/* Badge de statut */}
       {file.compressed ? (
         <Badge variant="success">
           <CheckCircle2 size={12} className="mr-1" />
@@ -835,22 +815,19 @@ const FileListItem = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
         </Badge>
       )}
 
-      {/* Comparaison de poids */}
       <div className="flex items-center gap-2 text-xs text-zinc-400">
         <span className="font-mono">{formatFileSize(originalSize)}</span>
         <span className="text-zinc-600">→</span>
         <span className="font-mono text-emerald-400 font-semibold">{formatFileSize(compressedSize)}</span>
       </div>
 
-      {/* Pourcentage de gain - Badge vert à droite */}
       {file.compressed && gain > 0 && (
         <Badge variant="success" className="font-bold">
           -{gain}%
         </Badge>
       )}
 
-      {/* Bouton de suppression - Visible à la fin */}
-      <Tooltip content="Supprimer de la liste" position="left">
+      <Tooltip content={t.main.removeFromList} position="left">
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -862,7 +839,7 @@ const FileListItem = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
             "text-zinc-400 hover:text-red-400 hover:bg-red-500/10",
             "opacity-0 group-hover:opacity-100"
           )}
-          aria-label="Supprimer"
+          aria-label={t.main.remove}
         >
           <Trash2 size={16} />
         </button>
@@ -872,7 +849,7 @@ const FileListItem = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
 };
 
 /**
- * FileCard - Carte de fichier détaillée (nouveau design)
+ * FileCard - Detailed file card component
  */
 const FileCard = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
   const formatFileSize = (bytes) => formatFileSizeUtil(bytes, t.units);
@@ -903,11 +880,9 @@ const FileCard = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Aperçu de l'image */}
       <div className="relative aspect-[4/3] image-preview overflow-hidden">
         {file.previewUrl ? (
           <>
-            {/* Image compressée (par défaut) */}
             <img
               src={compressedThumbnail || file.previewUrl}
               alt={file.name}
@@ -916,7 +891,6 @@ const FileCard = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
                 isHovered ? "opacity-0" : "opacity-100"
               )}
             />
-            {/* Image originale (au survol) */}
             <img
               src={file.previewUrl}
               alt={file.name}
@@ -925,7 +899,6 @@ const FileCard = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
                 isHovered ? "opacity-100" : "opacity-0"
               )}
             />
-            {/* Badge "Original" au survol */}
             {isHovered && (
               <div className="absolute top-2 right-2 px-2 py-1 bg-black/80 backdrop-blur-sm rounded text-zinc-300 text-xs font-medium border border-zinc-700/50 z-10">
                 {t.sidebar.original}
@@ -933,13 +906,11 @@ const FileCard = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
             )}
           </>
         ) : (
-          /* Fallback icon for HEIC/TIFF files that can't be previewed */
           <div className="w-full h-full bg-zinc-800/50 flex items-center justify-center">
             <ImageIcon size={48} className="text-zinc-600" />
           </div>
         )}
-        
-        {/* Badge "Optimisé" en haut à gauche - Plus sombre */}
+
         {file.compressed && (
           <div className="absolute top-2 left-2 flex items-center gap-1.5 px-2 py-1 bg-black/80 backdrop-blur-sm rounded text-emerald-400 text-xs font-medium border border-zinc-800/50 z-10">
             <Eye size={12} />
@@ -947,22 +918,19 @@ const FileCard = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
           </div>
         )}
 
-        {/* Badge de gain en haut à droite - Vert émeraude profond avec texte blanc */}
         {file.compressed && gain > 0 && !isHovered && (
           <div className="absolute top-2 right-2 px-2.5 py-1 bg-emerald-700 text-white text-xs font-bold rounded border border-emerald-600/50 shadow-lg z-20">
             -{gain}%
           </div>
         )}
 
-        {/* Boutons d'action - Visible uniquement au survol, positionnés en bas */}
         <div className={cn(
           "absolute bottom-2 right-2 flex items-center gap-2 transition-all duration-200 z-30",
           isHovered ? "opacity-100 scale-100" : "opacity-0 scale-90",
           isHovered ? "" : "pointer-events-none"
         )}>
-          {/* Bouton Révéler - Visible uniquement si le fichier est optimisé */}
           {file.compressed && file.savedPath && onReveal && (
-            <Tooltip content="Révéler dans le Finder" position="top">
+            <Tooltip content={t.main.openFolder} position="top">
               <Button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -970,15 +938,14 @@ const FileCard = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
                 }}
                 variant="icon"
                 size="icon"
-                aria-label="Révéler"
+                aria-label={t.main.openFolder}
               >
                 <FolderOpen size={14} />
               </Button>
             </Tooltip>
           )}
-          
-          {/* Bouton de suppression */}
-          <Tooltip content="Supprimer de la liste" position="top">
+
+          <Tooltip content={t.main.removeFromList} position="top">
             <Button
               onClick={(e) => {
                 e.stopPropagation();
@@ -986,7 +953,7 @@ const FileCard = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
               }}
               variant="iconDanger"
               size="icon"
-              aria-label="Supprimer"
+              aria-label={t.main.remove}
             >
               <Trash2 size={14} />
             </Button>
@@ -994,14 +961,11 @@ const FileCard = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
         </div>
       </div>
 
-      {/* Informations du fichier */}
       <div className="p-2 space-y-1.5 border-t border-zinc-800">
-        {/* Nom du fichier */}
         <p className="text-sm font-medium text-zinc-200 truncate">
           {file.name}
         </p>
 
-        {/* Ligne d'information : taille avant → après */}
         <div className="flex items-center gap-2 text-xs">
           {file.compressed ? (
             <>
@@ -1116,60 +1080,35 @@ const PicRedux = () => {
         // Note: getPathForFile returns a Promise, so we need to await it
         if (window.electronAPI && window.electronAPI.getPathForFile) {
           try {
-            // getPathForFile returns a Promise
             const resolvedPath = await window.electronAPI.getPathForFile(file);
             if (resolvedPath) {
               filePath = resolvedPath;
-              console.log('[handleFiles] Resolved Path (from webUtils.getPathForFile):', filePath, 'for file:', file.name);
             }
           } catch (error) {
-            console.warn('[handleFiles] Error calling getPathForFile:', error);
+            // Path resolution failed, will use fallbacks
           }
         }
-        
-        // Fallback 1: Try file.path if webUtils didn't work
+
         if (!filePath && file.path) {
           filePath = file.path;
-          console.log('[handleFiles] Fallback: Using file.path:', filePath, 'for file:', file.name);
         }
-        
-        // Fallback 2: Try dataTransferItems if available
+
         if (!filePath && dataTransferItems && dataTransferItems[index]) {
           const item = dataTransferItems[index];
           if (item.getAsFileSystemEntry) {
             const entry = item.getAsFileSystemEntry();
             if (entry && entry.fullPath) {
               filePath = entry.fullPath;
-              console.log('[handleFiles] Fallback: Path from getAsFileSystemEntry:', filePath);
             }
           } else if (item.webkitGetAsEntry) {
             const entry = item.webkitGetAsEntry();
             if (entry && entry.fullPath) {
               filePath = entry.fullPath;
-              console.log('[handleFiles] Fallback: Path from webkitGetAsEntry:', filePath);
             }
           }
         }
-        
-        // Log the resolved path as requested
-        console.log('[handleFiles] Resolved Path:', filePath);
-        
-        // Validate path format
-        if (filePath) {
-          // Check if path is absolute (starts with / on Unix/Mac, or has drive letter on Windows)
-          const isAbsolute = filePath.startsWith('/') || /^[A-Za-z]:\\/.test(filePath);
-          if (!isAbsolute) {
-            console.error('[handleFiles] ERROR: Path is not absolute! Path:', filePath, 'for file:', file.name);
-            console.error('[handleFiles] This will cause save failures. Path should be absolute like /Users/User/Downloads/file.png');
-          } else {
-            console.log('[handleFiles] ✓ Valid absolute path:', filePath);
-          }
-        } else {
-          console.error('[handleFiles] ERROR: No path found for file:', file.name);
-        }
 
         if (isDuplicateFile(file, filePath, files) || isDuplicateFile(file, filePath, newFiles)) {
-          console.log('[handleFiles] Skipping duplicate file:', file.name);
           continue;
         }
 
@@ -1187,7 +1126,6 @@ const PicRedux = () => {
           try {
             previewUrl = URL.createObjectURL(file);
           } catch (urlError) {
-            console.error('[handleFiles] Failed to create preview URL:', urlError);
             previewUrl = null;
             isPreviewSupported = false;
           }
@@ -1213,16 +1151,10 @@ const PicRedux = () => {
       }
 
       if (newFiles.length > 0) {
-        console.log('[handleFiles] Adding', newFiles.length, 'files to state');
         setFiles(prev => [...prev, ...newFiles]);
-      } else {
-        console.warn('[handleFiles] No new files to add');
       }
     } catch (error) {
-      console.error('[handleFiles] Error processing files:', {
-        error: error.message,
-        stack: error.stack
-      });
+      console.error('[handleFiles] Error processing files:', error.message);
     }
   };
 
@@ -1514,7 +1446,7 @@ const PicRedux = () => {
     compressionFormat, 
     compressionQuality, 
     backgroundFill, 
-    debouncedBackgroundColor, // Utiliser la version debounced
+    debouncedBackgroundColor,
     watermarkEnabled, 
     watermarkText, 
     watermarkLogo, 
@@ -1523,7 +1455,7 @@ const PicRedux = () => {
     watermarkSize, 
     watermarkOpacity, 
     watermarkFont, 
-    debouncedWatermarkColor, // Utiliser la version debounced
+    debouncedWatermarkColor,
     files.map(f => f.id).join(',')
   ]);
 
@@ -1845,7 +1777,6 @@ const PicRedux = () => {
     }
 
     try {
-      // 1. Charger l'image
       const img = await loadImage(fileData.file);
       imageUrl = img.src;
       
@@ -2173,36 +2104,20 @@ const PicRedux = () => {
   };
 
   const saveFileToSourceFolder = async (blob, fileData, formatOverride = null, qualityOverride = null, options = {}) => {
-    console.log('[saveFileToSourceFolder] Starting save operation', {
-      fileName: fileData.name,
-      formatOverride,
-      hasBlob: !!blob,
-      blobSize: blob?.size,
-      hasElectronAPI: !!window.electronAPI,
-      outputDestination,
-      customOutputFolder,
-      fileDataPath: fileData.path
-    });
-
     if (!window.electronAPI) {
-      console.warn('[saveFileToSourceFolder] Electron API not available, falling back to download');
       return downloadFile(blob, getOutputPreview(fileData.name, formatOverride));
     }
 
     let outputDir;
     if (outputDestination === 'custom' && customOutputFolder) {
       outputDir = customOutputFolder;
-      console.log('[saveFileToSourceFolder] Using custom output folder:', outputDir);
     } else if (fileData.path) {
-      const pathSeparator = fileData.path.includes('\\') ? '\\' : '/';
       const lastSeparator = Math.max(
         fileData.path.lastIndexOf('/'),
         fileData.path.lastIndexOf('\\')
       );
       outputDir = lastSeparator > 0 ? fileData.path.substring(0, lastSeparator) : fileData.path;
-      console.log('[saveFileToSourceFolder] Using source folder:', outputDir);
     } else {
-      console.warn('[saveFileToSourceFolder] No file path available, falling back to download');
       return downloadFile(blob, getOutputPreview(fileData.name, formatOverride));
     }
 
@@ -2218,20 +2133,17 @@ const PicRedux = () => {
         }
         
         const outputPath = `${outputDir}${pathSeparator}${finalOutputFilename}`;
-        console.log('[saveFileToSourceFolder] Output path:', outputPath);
 
         const arrayBuffer = await blob.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
-        console.log('[saveFileToSourceFolder] Blob converted to array, size:', uint8Array.length);
 
         let qualityToUse = qualityOverride !== null ? qualityOverride : compressionQuality;
         if (formatOverride === 'AVIF' || formatOverride === 'avif') {
           qualityToUse = Math.max(1, Math.min(100, qualityToUse || 80));
         }
-        
+
         const keepMetadata = !removeMetadata;
         const inputPath = fileData.path || fileData.originalPath || null;
-        console.log('[saveFileToSourceFolder] Input path:', inputPath);
         
         const backendOptions = {};
         
@@ -2288,15 +2200,6 @@ const PicRedux = () => {
           }
         }
         
-        console.log('[saveFileToSourceFolder] Calling electronAPI.saveFile with:', {
-          outputPath,
-          formatOverride,
-          qualityToUse,
-          keepMetadata,
-          inputPath,
-          hasBackendOptions: Object.keys(backendOptions).length > 0
-        });
-
         const result = await window.electronAPI.saveFile(
           Array.from(uint8Array), 
           outputPath,
@@ -2307,11 +2210,8 @@ const PicRedux = () => {
           inputPath,
           backendOptions
         );
-        
-        console.log('[saveFileToSourceFolder] Save result:', result);
-        
+
         if (result.success) {
-          console.log('[saveFileToSourceFolder] File saved successfully:', result.path);
           return {
             success: true,
             path: result.path,
@@ -2320,20 +2220,12 @@ const PicRedux = () => {
           };
         } else {
           const errorMsg = result.error || 'Error saving file';
-          console.error('[saveFileToSourceFolder] Save failed:', errorMsg, result);
           throw new Error(`Save failed: ${errorMsg}`);
         }
       } catch (error) {
-        console.error('[saveFileToSourceFolder] Exception during save:', {
-          error: error.message,
-          stack: error.stack,
-          fileName: fileData.name,
-          outputDir
-        });
         throw new Error(`Failed to save file "${fileData.name}": ${error.message}`);
       }
     } else {
-      console.warn('[saveFileToSourceFolder] No output directory, falling back to download');
       return downloadFile(blob, getOutputPreview(fileData.name, formatOverride));
     }
   };
@@ -2498,7 +2390,6 @@ const PicRedux = () => {
     isCancelledRef.current = true;
     setIsProcessing(false);
     setProgress(0);
-    // Réinitialiser les fichiers en cours de traitement
     setFiles(prev => prev.map(f => 
       f.status === 'processing' 
         ? { ...f, status: 'pending' }
@@ -2508,8 +2399,7 @@ const PicRedux = () => {
 
   const handleExportAll = async () => {
     if (files.length === 0 || isProcessing) return;
-    
-    // Réinitialiser le flag d'annulation
+
     isCancelledRef.current = false;
     
     if (!isPro && quotaUsed >= quotaLimit) {
@@ -2612,9 +2502,7 @@ const PicRedux = () => {
     const totalFiles = sortedFiles.length;
 
     for (let i = 0; i < totalFiles; i++) {
-      // Vérifier si l'optimisation a été annulée
       if (isCancelledRef.current) {
-        console.log('[handleExportAll] Optimization cancelled by user');
         break;
       }
       
@@ -2652,21 +2540,18 @@ const PicRedux = () => {
       }
       
       try {
-        // Vérifier à nouveau si annulé avant de commencer le traitement
         if (isCancelledRef.current) {
           break;
         }
-        
+
         setFiles(prev => prev.map(f => 
           f.id === fileData.id 
             ? { ...f, status: 'processing' }
             : f
         ));
 
-        // Traiter le fichier (compression)
         const result = await processFile(fileData, config);
-        
-        // Vérifier si annulé après le traitement
+
         if (isCancelledRef.current) {
           break;
         }
@@ -2728,11 +2613,7 @@ const PicRedux = () => {
           }
         }
         
-        console.log('[handleExportAll] Processing file:', fileData.name, 'Format:', result.actualFormat);
-        
         const saveResult = await saveFileToSourceFolder(result.blob, fileData, result.actualFormat, config.quality, backendOptions);
-
-        console.log('[handleExportAll] Save result for', fileData.name, ':', saveResult);
 
         const savedPath = (saveResult && saveResult.path) ? saveResult.path : (typeof saveResult === 'string' ? saveResult : null);
 
@@ -2742,18 +2623,8 @@ const PicRedux = () => {
         );
 
         if (!saveSuccess) {
-          const errorDetails = {
-            saveResult,
-            savedPath,
-            fileName: fileData.name,
-            hasBlob: !!result.blob,
-            blobSize: result.blob?.size
-          };
-          console.error('[handleExportAll] File save failed:', errorDetails);
-          throw new Error(`File save failed for "${fileData.name}". Save result: ${JSON.stringify(saveResult)}`);
+          throw new Error(`File save failed for "${fileData.name}"`);
         }
-        
-        console.log('[handleExportAll] File saved successfully:', savedPath);
 
         const originalSize = fileData.size;
         const compressedSize = (saveResult && typeof saveResult === 'object' && (saveResult.finalSize || saveResult.size)) 
@@ -2886,17 +2757,10 @@ const PicRedux = () => {
         }
 
         successCount++;
-        console.log('[handleExportAll] Successfully processed file:', fileData.name, `(${successCount}/${totalFiles})`);
       } catch (error) {
         errorCount++;
 
         const errorMessage = error.message || 'Error processing file';
-        console.error('[handleExportAll] Error processing file:', fileData.name, {
-          error: errorMessage,
-          stack: error.stack,
-          fileName: fileData.name,
-          fileId: fileData.id
-        });
 
         setFiles(prev => prev.map(f => 
           f.id === fileData.id 
@@ -2955,7 +2819,6 @@ const PicRedux = () => {
 
   return (
     <>
-      {/* Styles personnalisés pour les sliders */}
       <style>{`
         input[type="range"]::-webkit-slider-thumb {
           appearance: none;
@@ -2992,7 +2855,6 @@ const PicRedux = () => {
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        {/* Barre de progression en haut */}
         {isProcessing && (
           <div className="absolute top-0 left-0 right-0 h-1 bg-zinc-900 z-50">
             <div
@@ -3002,7 +2864,6 @@ const PicRedux = () => {
           </div>
         )}
 
-      {/* Overlay de drag & drop */}
       {isDragOver && (
         <div className="absolute inset-0 bg-violet-600/10 border-4 border-dashed border-violet-600 z-50 flex items-center justify-center pointer-events-none">
           <div className="text-center">
@@ -3012,15 +2873,9 @@ const PicRedux = () => {
         </div>
       )}
       
-      {/* ============================================
-          SIDEBAR GAUCHE - PARAMÈTRES
-          ============================================ */}
       <aside className="w-80 bg-zinc-900 border-r border-zinc-800 flex flex-col overflow-hidden">
-        {/* Header de la Sidebar - BRANDING */}
         <div className="px-6 py-3 border-b border-zinc-800 bg-zinc-900/50">
-          {/* Zone draggable avec logo + titre */}
           <div className="drag-region pt-8">
-            {/* NOM + BADGE - Bloc compact */}
             <div className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5">
@@ -3033,7 +2888,6 @@ const PicRedux = () => {
                     PicRedux
                   </h2>
                 </div>
-                {/* Sélecteur de langue compact */}
                 <div className="relative no-drag">
                   <button
                     onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
@@ -3086,7 +2940,6 @@ const PicRedux = () => {
             </div>
           </div>
           
-          {/* Slim Status Banner - visible uniquement en mode PRO */}
           {isPro && (
             <div className="mt-3 no-drag">
               <div className="w-full py-1.5 px-3 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-md flex items-center justify-center gap-2">
@@ -3096,7 +2949,6 @@ const PicRedux = () => {
             </div>
           )}
           
-          {/* Widget Quota - visible uniquement en mode TRIAL */}
           {!isPro && (
             <QuotaWidget 
               quotaUsed={quotaUsed} 
@@ -3107,12 +2959,9 @@ const PicRedux = () => {
           )}
         </div>
 
-        {/* Séparateur visuel après le header */}
         <div className="h-px bg-zinc-800/50"></div>
 
-        {/* Contenu scrollable */}
         <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
-          {/* Section: Profils */}
           <Accordion 
             title={t.sidebar.profiles} 
             icon={Settings} 
@@ -3139,7 +2988,6 @@ const PicRedux = () => {
                 </div>
               </div>
 
-              {/* Menus déroulants pour Social Media */}
               {profile === PROFILE_SOCIAL_MEDIA && (
                 <>
                   <div>
@@ -3202,7 +3050,6 @@ const PicRedux = () => {
             </div>
           </Accordion>
 
-          {/* Section: Redimensionnement */}
           <Accordion 
             title={t.sidebar.resizing} 
             icon={Maximize2} 
@@ -3210,7 +3057,6 @@ const PicRedux = () => {
             tooltip={t.sidebar.resizingTooltip}
           >
             <div className="space-y-4">
-              {/* Sélecteur de mode */}
               <div className="flex gap-1 h-9 p-1 bg-zinc-800/50 rounded-md border border-zinc-700">
                 <button
                   onClick={() => setResizeMode('dimensions')}
@@ -3236,7 +3082,6 @@ const PicRedux = () => {
                 </button>
               </div>
 
-              {/* Mode Dimensions */}
               {resizeMode === 'dimensions' && (
                 <>
                   <div className="grid grid-cols-2 gap-2">
@@ -3310,7 +3155,6 @@ const PicRedux = () => {
                     <span className="text-sm text-zinc-300 break-words">{t.sidebar.keepAspectRatio}</span>
                   </label>
 
-                  {/* Option Background Fill */}
                   <div className="space-y-3">
                     <label className="flex items-center gap-2 cursor-pointer transition-all group">
                       <input
@@ -3333,7 +3177,6 @@ const PicRedux = () => {
                       <span className="text-sm text-zinc-300 break-words">{t.sidebar.backgroundFill}</span>
                     </label>
 
-                    {/* Sélecteur de couleur pour Background Fill */}
                     {backgroundFill && (
                       <div>
                         <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">{t.sidebar.backgroundColor}</label>
@@ -3354,7 +3197,6 @@ const PicRedux = () => {
                 </>
               )}
 
-              {/* Mode Percentage */}
               {resizeMode === 'percentage' && (
                 <>
                   <div>
@@ -3393,7 +3235,6 @@ const PicRedux = () => {
             </div>
           </Accordion>
 
-          {/* Section: Format & Qualité */}
           <Accordion 
             title={t.sidebar.formatQuality} 
             icon={Zap} 
@@ -3419,7 +3260,6 @@ const PicRedux = () => {
                 </div>
               </div>
 
-              {/* Slider de qualité */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wide">{t.sidebar.quality}</label>
@@ -3440,7 +3280,6 @@ const PicRedux = () => {
                 />
               </div>
 
-              {/* Checkbox Supprimer les métadonnées */}
               <label className="flex items-center gap-2 cursor-pointer group">
                 <input
                   type="checkbox"
@@ -3486,14 +3325,12 @@ const PicRedux = () => {
                   />
                 </div>
               </div>
-              {/* Preview du nom de fichier */}
               <p className="text-xs text-zinc-500 mt-1.5">
                 {t.sidebar.example}: {outputPrefix || ''}image_01{outputSuffix || (language === 'fr' ? '_optimisé' : '_optimized')}.{compressionFormat === 'Original' ? 'jpg' : (compressionFormat === 'JPEG' ? 'jpg' : compressionFormat.toLowerCase())}
               </p>
             </div>
           </Accordion>
 
-          {/* Section: Filigrane */}
           <Accordion 
             title={t.sidebar.watermark} 
             icon={ImageIcon} 
@@ -3501,7 +3338,6 @@ const PicRedux = () => {
             tooltip={t.sidebar.watermarkTooltip}
           >
             <div className="space-y-4">
-              {/* Toggle Activer */}
               <label className="flex items-center gap-2 cursor-pointer">
                 <div className="relative">
                   <input
@@ -3525,7 +3361,6 @@ const PicRedux = () => {
 
               {watermarkEnabled && (
                 <>
-                  {/* Sélecteur de type (Image/Texte) */}
                   <div>
                     <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">{t.sidebar.watermarkType}</label>
                     <div className="flex gap-1 h-9 p-1 bg-zinc-800/50 rounded-md border border-zinc-700">
@@ -3554,7 +3389,6 @@ const PicRedux = () => {
                     </div>
                   </div>
 
-                  {/* Upload Logo ou Input Texte selon le type */}
                   {watermarkType === 'image' ? (
                     <div>
                       <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">{t.sidebar.watermarkSelectImage}</label>
@@ -3587,7 +3421,6 @@ const PicRedux = () => {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {/* Input texte */}
                       <div>
                         <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">{t.sidebar.watermarkText}</label>
                         <input
@@ -3599,7 +3432,6 @@ const PicRedux = () => {
                         />
                       </div>
 
-                      {/* Sélecteur de police */}
                       <div>
                         <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">{t.sidebar.watermarkFont}</label>
                         <div className="relative">
@@ -3624,7 +3456,6 @@ const PicRedux = () => {
                         </div>
                       </div>
 
-                      {/* Choix de couleur */}
                       <div>
                         <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">{t.sidebar.watermarkColor}</label>
                         <input
@@ -3642,29 +3473,23 @@ const PicRedux = () => {
                     </div>
                   )}
 
-                  {/* Groupe de réglages du filigrane */}
                   <div className="space-y-4 pt-2 border-t border-zinc-800">
-                    {/* Position du filigrane - Pattern Android */}
                     <div>
                       <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">{t.sidebar.watermarkPosition}</label>
                       <div className="relative w-full aspect-square bg-zinc-950/50 rounded-md border border-zinc-800/50 p-4">
-                        {/* Icône d'image au centre (discrète et grisée) */}
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                           <ImageIcon size={48} className="text-zinc-800/30" />
                         </div>
-                        {/* Lignes de repère horizontales */}
                         <div className="absolute inset-0 flex flex-col justify-between py-4">
                           <div className="w-full h-[1px] bg-zinc-700/20"></div>
                           <div className="w-full h-[1px] bg-zinc-700/20"></div>
                           <div className="w-full h-[1px] bg-zinc-700/20"></div>
                         </div>
-                        {/* Lignes de repère verticales */}
                         <div className="absolute inset-0 flex justify-between px-4">
                           <div className="h-full w-[1px] bg-zinc-700/20"></div>
                           <div className="h-full w-[1px] bg-zinc-700/20"></div>
                           <div className="h-full w-[1px] bg-zinc-700/20"></div>
                         </div>
-                        {/* Grille de points */}
                         <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 gap-0 p-4">
                           {[
                             { value: 'top-left' },
@@ -3686,14 +3511,12 @@ const PicRedux = () => {
                                 onClick={() => setWatermarkPosition(pos.value)}
                                 className="flex items-center justify-center relative group"
                               >
-                                {/* Point inactif */}
                                 <div className={cn(
                                   "absolute w-2.5 h-2.5 rounded-full border transition-all duration-200",
                                   isActive
                                     ? "opacity-0 scale-0"
                                     : "border-zinc-600/60 bg-transparent group-hover:border-zinc-500"
                                 )} />
-                                {/* Point actif */}
                                 <div className={cn(
                                   "absolute rounded-full transition-all duration-200 flex items-center justify-center",
                                   isActive
@@ -3702,7 +3525,6 @@ const PicRedux = () => {
                                 )}>
                                   <div className="w-2.5 h-2.5 bg-white rounded-full shadow-sm"></div>
                                 </div>
-                                {/* Aperçu du texte si mode texte et position active */}
                                 {showTextPreview && isActive && (
                                   <div 
                                     className="absolute text-[8px] font-bold px-1 py-0.5 rounded whitespace-nowrap pointer-events-none z-10"
@@ -3722,7 +3544,6 @@ const PicRedux = () => {
                       </div>
                     </div>
 
-                    {/* Taille du logo/texte */}
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
                         <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wide">
@@ -3747,7 +3568,6 @@ const PicRedux = () => {
                       </div>
                     </div>
 
-                    {/* Opacité */}
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
                         <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wide">{t.sidebar.watermarkOpacity}</label>
@@ -3775,7 +3595,6 @@ const PicRedux = () => {
             </div>
           </Accordion>
 
-          {/* Section: Output */}
           <Accordion 
             title={t.sidebar.output} 
             icon={FolderOpen} 
@@ -3822,7 +3641,6 @@ const PicRedux = () => {
           </Accordion>
         </div>
 
-        {/* Bouton "Lancer l'optimisation" fixé en bas */}
         <div className="p-4 border-t border-zinc-800 bg-zinc-900">
           {isProcessing ? (
             <div 
@@ -3869,11 +3687,7 @@ const PicRedux = () => {
         </div>
       </aside>
 
-      {/* ============================================
-          ZONE PRINCIPALE - FICHIERS
-          ============================================ */}
       <main className="flex-1 flex flex-col overflow-hidden bg-zinc-950">
-        {/* En-tête avec titre et actions */}
         <header className="px-6 py-4 border-b border-zinc-800 bg-zinc-900/50 drag-region">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 no-drag">
@@ -3904,7 +3718,6 @@ const PicRedux = () => {
           </div>
         </header>
 
-        {/* Onglets de filtres et tri */}
         <div className="px-6 py-3 border-b border-zinc-800 bg-zinc-900/30">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1">
@@ -3944,10 +3757,8 @@ const PicRedux = () => {
               })}
             </div>
             
-            {/* Sélecteur de layout et menu de tri */}
             {filteredFiles.length > 0 && (
               <div className="flex items-center gap-3">
-                {/* Sélecteur de layout */}
                 <div className="flex items-center gap-1 border-r border-zinc-800 pr-3">
                   <Tooltip content={t.main.grid} position="bottom">
                     <button
@@ -3986,8 +3797,7 @@ const PicRedux = () => {
                     </button>
                   </Tooltip>
                 </div>
-                
-                {/* Menu de tri */}
+
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-zinc-500">{t.main.sortBy}:</span>
                   <select
@@ -4005,10 +3815,8 @@ const PicRedux = () => {
           </div>
         </div>
 
-        {/* Zone de contenu */}
         <div className="flex-1 overflow-auto">
           {filteredFiles.length === 0 ? (
-            /* Empty State avec drag & drop - Design minimaliste */
             <div 
               className="h-full flex items-center justify-center p-8"
               onDragOver={handleDragOver}
@@ -4029,7 +3837,6 @@ const PicRedux = () => {
               </div>
             </div>
           ) : layout === 'grid' ? (
-            /* Grille de cartes responsive avec animation cascade */
             <div className="p-4 transition-opacity duration-300">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                 {filteredFiles.map((file, index) => (
@@ -4051,7 +3858,6 @@ const PicRedux = () => {
               </div>
             </div>
           ) : (
-            /* Mode liste avec lignes horizontales */
             <div className="transition-opacity duration-300">
               <div className="divide-y divide-zinc-800/50">
                 {filteredFiles.map((file, index) => (
@@ -4075,7 +3881,6 @@ const PicRedux = () => {
             </div>
           )}
 
-          {/* Input file caché */}
           <input
             ref={fileInputRef}
             type="file"
@@ -4088,7 +3893,6 @@ const PicRedux = () => {
       </main>
       </div>
 
-      {/* Modale de succès */}
       <SuccessModal
         isOpen={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
@@ -4098,7 +3902,6 @@ const PicRedux = () => {
         t={t}
       />
 
-      {/* Modale de limite de quota */}
       <QuotaLimitModal
         isOpen={showQuotaLimitModal}
         onClose={() => setShowQuotaLimitModal(false)}
@@ -4110,7 +3913,6 @@ const PicRedux = () => {
         t={t}
       />
 
-      {/* Modale d'activation de licence */}
       <ActivationLicenseModal
         isOpen={showActivationForm}
         onClose={() => {
@@ -4133,5 +3935,6 @@ const PicRedux = () => {
 };
 
 export default PicRedux;
+
 
 

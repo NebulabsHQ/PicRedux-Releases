@@ -32,20 +32,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   
   resetQuota: () => ipcRenderer.invoke('reset-quota'),
   
-  // CRITICAL: Use webUtils.getPathForFile to get the real absolute path of a file
-  // This is the proper Electron API to get file paths in the renderer process
-  // Note: getPathForFile returns a Promise
   getPathForFile: (file) => {
     if (webUtils && webUtils.getPathForFile) {
       try {
-        // webUtils.getPathForFile returns a Promise
         return webUtils.getPathForFile(file);
       } catch (error) {
-        console.error('[preload] Error in getPathForFile:', error);
         return Promise.resolve(null);
       }
     }
-    // Fallback to file.path if webUtils is not available
     return Promise.resolve(file ? (file.path || null) : null);
   },
 });

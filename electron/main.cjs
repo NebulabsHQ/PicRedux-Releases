@@ -12,7 +12,6 @@ async function getHeicConvert() {
     try {
       heicConvert = (await import('heic-convert')).default;
     } catch (error) {
-      console.error('Failed to load heic-convert:', error);
       throw new Error('HEIC support not available');
     }
   }
@@ -245,15 +244,11 @@ ipcMain.handle('save-file', async (event, bufferData, filePath, format = null, q
   
   if (inputPath && existsSync(inputPath)) {
     if (isHeicSource) {
-      // Convert HEIC to JPEG buffer first, then pass to Sharp
       try {
-        console.log('[save-file] Converting HEIC file:', inputPath);
         const heicBuffer = readFileSync(inputPath);
         const jpegBuffer = await convertHeicToJpeg(heicBuffer);
-        console.log('[save-file] HEIC converted to JPEG, buffer size:', jpegBuffer.length);
         pipeline = sharp(jpegBuffer, { failOn: 'none' });
       } catch (heicError) {
-        console.error('[save-file] HEIC conversion failed:', heicError);
         throw new Error(`Failed to convert HEIC file: ${heicError.message}`);
       }
     } else {
@@ -271,12 +266,9 @@ ipcMain.handle('save-file', async (event, bufferData, filePath, format = null, q
     
     if (bufferIsHeic) {
       try {
-        console.log('[save-file] Converting HEIC buffer');
         const jpegBuffer = await convertHeicToJpeg(inputBuffer);
-        console.log('[save-file] HEIC buffer converted to JPEG, size:', jpegBuffer.length);
         pipeline = sharp(jpegBuffer, { failOn: 'none' });
       } catch (heicError) {
-        console.error('[save-file] HEIC buffer conversion failed:', heicError);
         throw new Error(`Failed to convert HEIC: ${heicError.message}`);
       }
     } else {
@@ -340,25 +332,19 @@ ipcMain.handle('save-file', async (event, bufferData, filePath, format = null, q
     
     if (options.resize) {
       const { width, height, mode, value, keepAspectRatio } = options.resize;
-      console.log('[save-file] Resize options:', { width, height, mode, value, keepAspectRatio });
-      
+
       if (mode === 'percentage' && value) {
         const metadata = await pipeline.metadata();
         const newWidth = Math.round(metadata.width * (value / 100));
         const newHeight = Math.round(metadata.height * (value / 100));
-        console.log('[save-file] Percentage resize:', { originalWidth: metadata.width, originalHeight: metadata.height, newWidth, newHeight });
         pipeline = pipeline.resize(newWidth, newHeight, { fit: 'fill' });
       } else if (mode === 'dimensions') {
         const hasWidth = width && width > 0;
         const hasHeight = height && height > 0;
-        
+
         if (hasWidth || hasHeight) {
-          // If both dimensions are provided and keepAspectRatio is false, use 'fill' to force exact dimensions
-          // Otherwise use 'inside' to maintain aspect ratio
           const fitMode = (hasWidth && hasHeight && keepAspectRatio === false) ? 'fill' : 'inside';
-          
-          console.log('[save-file] Dimension resize:', { width: hasWidth ? width : null, height: hasHeight ? height : null, fitMode });
-          
+
           pipeline = pipeline.resize(hasWidth ? width : null, hasHeight ? height : null, { 
             fit: fitMode,
             withoutEnlargement: false
@@ -443,14 +429,12 @@ ipcMain.handle('save-file', async (event, bufferData, filePath, format = null, q
           const imageMetadata = await pipeline.metadata();
           const width = imageMetadata.width;
           const height = imageMetadata.height;
-          
+
           const fontSize = Math.max(12, Math.min(200, (width * (wm.size || 50)) / 100 / wm.text.length * 2));
           const color = wm.color || '#FFFFFF';
           const font = wm.fontFamily || wm.font || 'Arial';
           const opacity = wm.opacity ? wm.opacity / 100 : 0.5;
-          
-          console.log('[Watermark] Applying text watermark with font:', font, 'wm.font:', wm.font, 'wm.fontFamily:', wm.fontFamily);
-          
+
           const gravityMap = {
             'top-left': 'northwest',
             'top-center': 'north',
@@ -462,14 +446,11 @@ ipcMain.handle('save-file', async (event, bufferData, filePath, format = null, q
             'bottom-center': 'south',
             'bottom-right': 'southeast'
           };
-          
+
           const gravity = gravityMap[wm.position] || 'southeast';
-          
+
           const escapedText = wm.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-          
-          // Map common fonts to their proper names for SVG rendering
-          // Note: librsvg (used by sharp) may not support all system fonts
-          // For best results, use web-safe fonts or fonts available on the system
+
           const fontMap = {
             'Arial': 'Arial, Helvetica, sans-serif',
             'Helvetica': 'Helvetica, Arial, sans-serif',
@@ -483,11 +464,9 @@ ipcMain.handle('save-file', async (event, bufferData, filePath, format = null, q
             'Palatino Linotype': 'Palatino Linotype, Book Antiqua, Palatino, serif',
             'Lucida Console': 'Lucida Console, Monaco, monospace'
           };
-          
+
           const fontStack = fontMap[font] || `"${font}", sans-serif`;
-          
-          console.log('[Watermark] Using font stack:', fontStack);
-          
+
           const svgText = `
             <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
               <style>
@@ -509,11 +488,9 @@ ipcMain.handle('save-file', async (event, bufferData, filePath, format = null, q
               </text>
             </svg>
           `;
-          
-          console.log('[Watermark] SVG generated with font-family:', fontStack);
-          
+
           const watermarkInput = Buffer.from(svgText);
-          
+
           composites.push({
             input: watermarkInput,
             gravity: gravity,

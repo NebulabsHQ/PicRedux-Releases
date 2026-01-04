@@ -3,17 +3,17 @@
 @tailwind utilities;
 
 /* ============================================
-   RESET NATIF APP (Electron)
+   NATIVE APP RESET (Electron)
    ============================================ */
 
-/* Reset global */
+/* Global reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Body et HTML - 100% viewport, pas de scroll */
+/* Body and HTML - 100% viewport, no scroll */
 html,
 body {
   width: 100vw;
@@ -24,7 +24,7 @@ body {
   background-color: rgb(9, 9, 11); /* zinc-950 */
 }
 
-/* Conteneur racine React */
+/* React root container */
 #root {
   width: 100%;
   height: 100%;
@@ -35,10 +35,10 @@ body {
 }
 
 /* ============================================
-   SCROLLBARS PERSONNALISÉES (Webkit/Chromium)
+   CUSTOM SCROLLBARS (Webkit/Chromium)
    ============================================ */
 
-/* Scrollbar pour Webkit (Chrome, Electron, Edge) */
+/* Scrollbar for Webkit (Chrome, Electron, Edge) */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -59,23 +59,23 @@ body {
   background: rgb(82, 82, 91); /* zinc-600 */
 }
 
-/* Scrollbar pour Firefox */
+/* Scrollbar for Firefox */
 * {
   scrollbar-width: thin;
   scrollbar-color: rgb(63, 63, 70) rgb(39, 39, 42); /* thumb track */
 }
 
 /* ============================================
-   STYLES GLOBAUX SUPPLEMENTAIRES
+   ADDITIONAL GLOBAL STYLES
    ============================================ */
 
-/* Empêcher la sélection de texte par défaut (optionnel pour une app desktop) */
+/* Prevent default text selection (optional for desktop app) */
 body {
   -webkit-user-select: none;
   user-select: none;
 }
 
-/* Réactiver la sélection pour les inputs et textareas */
+/* Re-enable selection for inputs and textareas */
 input,
 textarea,
 [contenteditable] {
@@ -83,7 +83,7 @@ textarea,
   user-select: text;
 }
 
-/* Améliorer le rendu des polices - Police moderne type Inter/Geist */
+/* Improve font rendering - Modern font stack (Inter/Geist style) */
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -94,22 +94,22 @@ body {
   font-variant-numeric: oldstyle-nums;
 }
 
-/* Désactiver les outlines par défaut (on utilisera focus:ring dans les composants) */
+/* Disable default outlines (using focus:ring in components instead) */
 *:focus {
   outline: none;
 }
 
-/* Empêcher le drag des images par défaut */
+/* Prevent default image dragging */
 img {
   -webkit-user-drag: none;
   user-drag: none;
 }
 
 /* ============================================
-   FOND DE TRANSPARENCE (CHECKERBOARD) POUR IMAGES
+   TRANSPARENCY BACKGROUND (CHECKERBOARD) FOR IMAGES
    ============================================ */
 
-/* Conteneur pour les previews d'images avec fond de transparence */
+/* Container for image previews with transparency background */
 .image-preview {
   background:
     linear-gradient(45deg, #2b2b2b 25%, transparent 25%),
@@ -125,12 +125,12 @@ img {
    ELECTRON WINDOW DRAGGING
    ============================================ */
 
-/* Zone draggable pour le déplacement de la fenêtre */
+/* Draggable zone for window movement */
 .drag-region {
   -webkit-app-region: drag;
 }
 
-/* Zone non-draggable pour les éléments interactifs */
+/* Non-draggable zone for interactive elements */
 .no-drag {
   -webkit-app-region: no-drag;
 }

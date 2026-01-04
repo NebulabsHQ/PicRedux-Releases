@@ -3082,7 +3082,6 @@ const PicRedux = () => {
                     TRIAL
                   </span>
                 )}
-                <span className="text-[10px] text-zinc-500 font-medium">v1.0</span>
               </div>
             </div>
           </div>

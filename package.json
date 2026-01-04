@@ -29,7 +29,9 @@
     "build": {
         "asarUnpack": [
             "**/node_modules/sharp/**/*",
-            "**/node_modules/@img/**/*"
+            "**/node_modules/@img/**/*",
+            "**/node_modules/heic-convert/**/*",
+            "**/node_modules/heic-decode/**/*"
         ],
         "appId": "com.nebulabs.picredux",
         "productName": "PicRedux",
@@ -71,6 +73,7 @@
         "electron-log": "^5.0.0",
         "electron-store": "^11.0.2",
         "electron-updater": "^6.1.7",
+        "heic-convert": "^2.1.0",
         "lucide-react": "^0.562.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",

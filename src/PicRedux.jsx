@@ -783,7 +783,7 @@ const FileListItem = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
     >
       {/* Thumbnail carré 40x40px */}
       <div className="relative w-10 h-10 rounded image-preview border border-zinc-800 overflow-hidden flex-shrink-0">
-        {file.previewUrl && (
+        {file.previewUrl ? (
           <>
             {/* Image compressée (par défaut) */}
             <img
@@ -804,6 +804,11 @@ const FileListItem = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
               )}
             />
           </>
+        ) : (
+          /* Fallback icon for HEIC/TIFF files that can't be previewed */
+          <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
+            <ImageIcon size={20} className="text-zinc-500" />
+          </div>
         )}
       </div>
 
@@ -897,7 +902,7 @@ const FileCard = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
     >
       {/* Aperçu de l'image */}
       <div className="relative aspect-[4/3] image-preview overflow-hidden">
-        {file.previewUrl && (
+        {file.previewUrl ? (
           <>
             {/* Image compressée (par défaut) */}
             <img
@@ -924,6 +929,11 @@ const FileCard = ({ file, onRemove, onReveal, t, compressedThumbnail }) => {
               </div>
             )}
           </>
+        ) : (
+          /* Fallback icon for HEIC/TIFF files that can't be previewed */
+          <div className="w-full h-full bg-zinc-800/50 flex items-center justify-center">
+            <ImageIcon size={48} className="text-zinc-600" />
+          </div>
         )}
         
         {/* Badge "Optimisé" en haut à gauche - Plus sombre */}
@@ -1074,9 +1084,22 @@ const PicRedux = () => {
   const [quotaAllowed, setQuotaAllowed] = useState(true);
 
   const { isDuplicateFile, filteredFiles, filterStats } = useFileManagement(files, activeFilter, sortBy);
+
+  // Helper function to validate image files (including HEIC/TIFF which may have empty MIME type)
+  const isValidImageFile = (file) => {
+    // Check MIME type first
+    if (file.type && file.type.startsWith('image/')) {
+      return true;
+    }
+    // Check extension for formats that browsers may not recognize (HEIC, HEIF, TIFF, TIF)
+    const ext = file.name.toLowerCase().split('.').pop();
+    const supportedExtensions = ['heic', 'heif', 'tiff', 'tif', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'avif'];
+    return supportedExtensions.includes(ext);
+  };
+
   const handleFiles = async (fileList, dataTransferItems = null) => {
     try {
-      const filesArray = Array.from(fileList).filter(file => file.type.startsWith('image/'));
+      const filesArray = Array.from(fileList).filter(file => isValidImageFile(file));
       const newFiles = [];
 
       for (let index = 0; index < filesArray.length; index++) {
@@ -1146,11 +1169,23 @@ const PicRedux = () => {
         }
 
         let previewUrl;
-        try {
-          previewUrl = URL.createObjectURL(file);
-        } catch (urlError) {
-          console.error('[handleFiles] Failed to create preview URL:', urlError);
-          continue;
+        let isPreviewSupported = true;
+        const ext = file.name.toLowerCase().split('.').pop();
+        const unsupportedPreviewFormats = ['heic', 'heif', 'tiff', 'tif'];
+        
+        // HEIC/TIFF files cannot be previewed natively in browsers
+        // Show generic icon instead (preview generation is too slow)
+        if (unsupportedPreviewFormats.includes(ext)) {
+          previewUrl = null;
+          isPreviewSupported = false;
+        } else {
+          try {
+            previewUrl = URL.createObjectURL(file);
+          } catch (urlError) {
+            console.error('[handleFiles] Failed to create preview URL:', urlError);
+            previewUrl = null;
+            isPreviewSupported = false;
+          }
         }
 
         newFiles.push({
@@ -1162,6 +1197,7 @@ const PicRedux = () => {
           path: filePath,
           originalPath: filePath,
           previewUrl: previewUrl,
+          isPreviewSupported: isPreviewSupported,
           compressed: false,
           compressionRatio: null,
           status: 'pending',
@@ -1230,6 +1266,12 @@ const PicRedux = () => {
 
   const generateCompressedThumbnail = async (file, format, quality, bgFill, bgColor, wmEnabled, wmText, wmLogo, wmType, wmPosition, wmSize, wmOpacity, wmFont, wmColor, wmColorCustom) => {
     try {
+      // Skip thumbnail generation for HEIC/TIFF - browsers cannot render them
+      const ext = file.name.toLowerCase().split('.').pop();
+      if (['heic', 'heif', 'tiff', 'tif'].includes(ext)) {
+        return null;
+      }
+      
       const img = await loadImage(file);
       const canvas = document.createElement('canvas');
       const maxThumbnailSize = 300;
@@ -1772,6 +1814,30 @@ const PicRedux = () => {
     } = config;
 
     let imageUrl = null;
+
+    // Check if file is HEIC/TIFF - these cannot be loaded in browser canvas
+    const ext = fileData.name.toLowerCase().split('.').pop();
+    const isHeicOrTiff = ['heic', 'heif', 'tiff', 'tif'].includes(ext);
+
+    if (isHeicOrTiff) {
+      // For HEIC/TIFF files, we skip canvas processing and send directly to backend Sharp
+      // Return the original file as blob with a flag indicating backend-only processing
+      const targetFormat = format === 'Original' ? 'JPEG' : format; // HEIC/TIFF cannot be written, default to JPEG
+      const actualFormat = targetFormat === 'AVIF' ? 'AVIF' : 
+                          targetFormat === 'WebP' ? 'WebP' : 
+                          targetFormat === 'PNG' ? 'PNG' : 'JPEG';
+      
+      return {
+        blob: fileData.file, // Pass the original file
+        size: fileData.size,
+        width: null, // Will be determined by Sharp
+        height: null,
+        actualFormat: actualFormat,
+        requestedFormat: format,
+        usedFallback: false,
+        isHeicOrTiff: true, // Flag for backend processing
+      };
+    }
 
     try {
       // 1. Charger l'image

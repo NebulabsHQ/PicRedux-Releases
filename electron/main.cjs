@@ -4,6 +4,31 @@ const { existsSync, writeFileSync, readFileSync, statSync, utimesSync, unlinkSyn
 const sharp = require('sharp');
 
 let mainWindow;
+let heicConvert = null;
+
+// Dynamically import heic-convert (ES module)
+async function getHeicConvert() {
+  if (!heicConvert) {
+    try {
+      heicConvert = (await import('heic-convert')).default;
+    } catch (error) {
+      console.error('Failed to load heic-convert:', error);
+      throw new Error('HEIC support not available');
+    }
+  }
+  return heicConvert;
+}
+
+// Convert HEIC/HEIF buffer to JPEG buffer
+async function convertHeicToJpeg(inputBuffer) {
+  const convert = await getHeicConvert();
+  const outputBuffer = await convert({
+    buffer: inputBuffer,
+    format: 'JPEG',
+    quality: 1 // Maximum quality, Sharp will handle compression
+  });
+  return outputBuffer;
+}
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
@@ -208,14 +233,55 @@ process.on('uncaughtException', () => {
 ipcMain.handle('save-file', async (event, bufferData, filePath, format = null, quality = 80, keepMetadata = true, preserveModificationTime = false, inputPath = null, options = {}) => {
   
   let pipeline;
+  let sourceExt = '';
+  
+  // Determine source extension
   if (inputPath && existsSync(inputPath)) {
-    pipeline = sharp(inputPath, { failOn: 'none' });
+    sourceExt = path.extname(inputPath).toLowerCase();
+  }
+  
+  // Check if source is HEIC/HEIF - needs conversion first
+  const isHeicSource = ['.heic', '.heif'].includes(sourceExt);
+  
+  if (inputPath && existsSync(inputPath)) {
+    if (isHeicSource) {
+      // Convert HEIC to JPEG buffer first, then pass to Sharp
+      try {
+        console.log('[save-file] Converting HEIC file:', inputPath);
+        const heicBuffer = readFileSync(inputPath);
+        const jpegBuffer = await convertHeicToJpeg(heicBuffer);
+        console.log('[save-file] HEIC converted to JPEG, buffer size:', jpegBuffer.length);
+        pipeline = sharp(jpegBuffer, { failOn: 'none' });
+      } catch (heicError) {
+        console.error('[save-file] HEIC conversion failed:', heicError);
+        throw new Error(`Failed to convert HEIC file: ${heicError.message}`);
+      }
+    } else {
+      pipeline = sharp(inputPath, { failOn: 'none' });
+    }
   } else {
     const inputBuffer = Buffer.isBuffer(bufferData) ? bufferData : Buffer.from(bufferData);
     if (!inputBuffer || inputBuffer.length === 0) {
       throw new Error('Empty or invalid input buffer');
     }
-    pipeline = sharp(inputBuffer, { failOn: 'none' });
+    
+    // Check if buffer is HEIC by looking at magic bytes or file extension from filePath
+    const outputExt = path.extname(filePath).toLowerCase();
+    const bufferIsHeic = isHeicSource || ['.heic', '.heif'].includes(outputExt);
+    
+    if (bufferIsHeic) {
+      try {
+        console.log('[save-file] Converting HEIC buffer');
+        const jpegBuffer = await convertHeicToJpeg(inputBuffer);
+        console.log('[save-file] HEIC buffer converted to JPEG, size:', jpegBuffer.length);
+        pipeline = sharp(jpegBuffer, { failOn: 'none' });
+      } catch (heicError) {
+        console.error('[save-file] HEIC buffer conversion failed:', heicError);
+        throw new Error(`Failed to convert HEIC: ${heicError.message}`);
+      }
+    } else {
+      pipeline = sharp(inputBuffer, { failOn: 'none' });
+    }
   }
   
   let originalFileSize = null;
@@ -251,9 +317,17 @@ ipcMain.handle('save-file', async (event, bufferData, filePath, format = null, q
         targetFormat = 'png';
       } else if (ext === 'webp') {
         targetFormat = 'webp';
+      } else if (ext === 'heic' || ext === 'heif' || ext === 'tiff' || ext === 'tif') {
+        // HEIC/HEIF/TIFF can be read by Sharp but not written - convert to JPEG by default
+        targetFormat = 'jpeg';
       } else {
         targetFormat = ext || 'jpeg';
       }
+    }
+    
+    // Ensure HEIC/TIFF input files are converted to a writable format
+    if (targetFormat === 'heic' || targetFormat === 'heif' || targetFormat === 'tiff' || targetFormat === 'tif') {
+      targetFormat = 'jpeg';
     }
     
     const isAvifRequested = targetFormat === 'avif' || fileExt === '.avif';
@@ -550,6 +624,10 @@ ipcMain.handle('process-image-batch', async (event, images, config) => {
         outputExt = '.jpg';
       } else if (config.format === 'PNG') {
         outputExt = '.png';
+      } else if (sourceExt.toLowerCase() === '.heic' || sourceExt.toLowerCase() === '.heif' || 
+                 sourceExt.toLowerCase() === '.tiff' || sourceExt.toLowerCase() === '.tif') {
+        // HEIC/HEIF/TIFF cannot be written by Sharp - convert to JPEG
+        outputExt = '.jpg';
       }
       
       const suffix = config.suffix || '_squeeze';
@@ -585,7 +663,7 @@ ipcMain.handle('get-file-paths', async () => {
     const result = await dialog.showOpenDialog(mainWindow, {
       properties: ['openFile', 'multiSelections'],
       filters: [
-        { name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'] }
+        { name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'heic', 'heif', 'tiff', 'tif', 'avif'] }
       ]
     });
     

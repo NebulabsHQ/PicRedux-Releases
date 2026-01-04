@@ -265,20 +265,29 @@ ipcMain.handle('save-file', async (event, bufferData, filePath, format = null, q
     }
     
     if (options.resize) {
-      const { width, height, mode, value } = options.resize;
+      const { width, height, mode, value, keepAspectRatio } = options.resize;
+      console.log('[save-file] Resize options:', { width, height, mode, value, keepAspectRatio });
+      
       if (mode === 'percentage' && value) {
         const metadata = await pipeline.metadata();
         const newWidth = Math.round(metadata.width * (value / 100));
         const newHeight = Math.round(metadata.height * (value / 100));
+        console.log('[save-file] Percentage resize:', { originalWidth: metadata.width, originalHeight: metadata.height, newWidth, newHeight });
         pipeline = pipeline.resize(newWidth, newHeight, { fit: 'fill' });
       } else if (mode === 'dimensions') {
-        const resizeOptions = {};
-        if (width && width > 0) resizeOptions.width = width;
-        if (height && height > 0) resizeOptions.height = height;
-        if (Object.keys(resizeOptions).length > 0) {
-          pipeline = pipeline.resize(resizeOptions.width || null, resizeOptions.height || null, { 
-            fit: 'inside',
-            withoutEnlargement: true 
+        const hasWidth = width && width > 0;
+        const hasHeight = height && height > 0;
+        
+        if (hasWidth || hasHeight) {
+          // If both dimensions are provided and keepAspectRatio is false, use 'fill' to force exact dimensions
+          // Otherwise use 'inside' to maintain aspect ratio
+          const fitMode = (hasWidth && hasHeight && keepAspectRatio === false) ? 'fill' : 'inside';
+          
+          console.log('[save-file] Dimension resize:', { width: hasWidth ? width : null, height: hasHeight ? height : null, fitMode });
+          
+          pipeline = pipeline.resize(hasWidth ? width : null, hasHeight ? height : null, { 
+            fit: fitMode,
+            withoutEnlargement: false
           });
         }
       }
@@ -363,8 +372,10 @@ ipcMain.handle('save-file', async (event, bufferData, filePath, format = null, q
           
           const fontSize = Math.max(12, Math.min(200, (width * (wm.size || 50)) / 100 / wm.text.length * 2));
           const color = wm.color || '#FFFFFF';
-          const font = wm.font || 'Arial';
+          const font = wm.fontFamily || wm.font || 'Arial';
           const opacity = wm.opacity ? wm.opacity / 100 : 0.5;
+          
+          console.log('[Watermark] Applying text watermark with font:', font, 'wm.font:', wm.font, 'wm.fontFamily:', wm.fontFamily);
           
           const gravityMap = {
             'top-left': 'northwest',
@@ -382,13 +393,34 @@ ipcMain.handle('save-file', async (event, bufferData, filePath, format = null, q
           
           const escapedText = wm.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
           
+          // Map common fonts to their proper names for SVG rendering
+          // Note: librsvg (used by sharp) may not support all system fonts
+          // For best results, use web-safe fonts or fonts available on the system
+          const fontMap = {
+            'Arial': 'Arial, Helvetica, sans-serif',
+            'Helvetica': 'Helvetica, Arial, sans-serif',
+            'Times New Roman': 'Times New Roman, Times, serif',
+            'Georgia': 'Georgia, serif',
+            'Courier New': 'Courier New, Courier, monospace',
+            'Verdana': 'Verdana, Geneva, sans-serif',
+            'Impact': 'Impact, Charcoal, sans-serif',
+            'Comic Sans MS': 'Comic Sans MS, cursive, sans-serif',
+            'Trebuchet MS': 'Trebuchet MS, sans-serif',
+            'Palatino Linotype': 'Palatino Linotype, Book Antiqua, Palatino, serif',
+            'Lucida Console': 'Lucida Console, Monaco, monospace'
+          };
+          
+          const fontStack = fontMap[font] || `"${font}", sans-serif`;
+          
+          console.log('[Watermark] Using font stack:', fontStack);
+          
           const svgText = `
             <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
               <style>
                 .watermark-text { 
                   fill: ${color}; 
                   font-size: ${fontSize}px; 
-                  font-family: ${font}, sans-serif;
+                  font-family: ${fontStack};
                   font-weight: bold;
                   opacity: ${opacity};
                 }
@@ -403,6 +435,8 @@ ipcMain.handle('save-file', async (event, bufferData, filePath, format = null, q
               </text>
             </svg>
           `;
+          
+          console.log('[Watermark] SVG generated with font-family:', fontStack);
           
           const watermarkInput = Buffer.from(svgText);
           

@@ -1208,8 +1208,7 @@ const PicRedux = () => {
     const presets = {
       Instagram: {
         Post: { width: 1080, height: 1080 },
-        Story: { width: 1080, height: 1920 },
-        Reel: { width: 1080, height: 1920 },
+        'Story / Reel': { width: 1080, height: 1920 },
       },
       YouTube: {
         Thumbnail: { width: 1280, height: 720 },
@@ -1483,12 +1482,14 @@ const PicRedux = () => {
 
   useEffect(() => {
     if (profile === PROFILE_SHOPIFY) {
+      // Shopify: 1200x1200 square format - keepAspectRatio = false because both dimensions are fixed
       setResizeWidth(1200);
       setResizeHeight(1200);
       setResizeMode('dimensions');
-      setKeepAspectRatio(true);
+      setKeepAspectRatio(false);
       setBackgroundFill(false);
     } else if (profile === PROFILE_EMAIL) {
+      // Email: only width defined, height is auto - keepAspectRatio = true
       setResizeWidth(600);
       setResizeHeight('');
       setResizeMode('dimensions');
@@ -1500,8 +1501,10 @@ const PicRedux = () => {
         setResizeWidth(dimensions.width);
         setResizeHeight(dimensions.height);
         setResizeMode('dimensions');
+        // If both dimensions are defined, keepAspectRatio = false
+        const hasBothDimensions = dimensions.width && dimensions.height;
+        setKeepAspectRatio(!hasBothDimensions);
       }
-      setKeepAspectRatio(false);
       setBackgroundFill(true);
     } else if (profile === PROFILE_CUSTOM) {
       setResizeWidth('');
@@ -2052,6 +2055,52 @@ const PicRedux = () => {
     }
   };
 
+  // Generate text watermark as PNG image using Canvas (for proper font rendering)
+  const generateTextWatermarkImage = async (text, font, color, opacity, targetWidth = 800) => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Calculate font size based on target width
+      const fontSize = Math.max(24, Math.min(200, targetWidth / text.length * 1.5));
+      
+      // Set font to measure text
+      ctx.font = `bold ${fontSize}px "${font}", sans-serif`;
+      const textMetrics = ctx.measureText(text);
+      const textWidth = textMetrics.width;
+      const textHeight = fontSize * 1.2;
+      
+      // Set canvas size with padding
+      const padding = fontSize * 0.5;
+      canvas.width = textWidth + padding * 2;
+      canvas.height = textHeight + padding * 2;
+      
+      // Clear canvas (transparent background)
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Set text properties
+      ctx.font = `bold ${fontSize}px "${font}", sans-serif`;
+      ctx.fillStyle = color;
+      ctx.globalAlpha = opacity / 100;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      // Draw text
+      ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+      
+      // Convert to blob
+      canvas.toBlob((blob) => {
+        if (blob) {
+          blob.arrayBuffer().then((buffer) => {
+            resolve(Array.from(new Uint8Array(buffer)));
+          });
+        } else {
+          resolve(null);
+        }
+      }, 'image/png');
+    });
+  };
+
   const saveFileToSourceFolder = async (blob, fileData, formatOverride = null, qualityOverride = null, options = {}) => {
     console.log('[saveFileToSourceFolder] Starting save operation', {
       fileName: fileData.name,
@@ -2119,7 +2168,8 @@ const PicRedux = () => {
           backendOptions.resize = {
             mode: 'dimensions',
             width: resizeWidth ? parseInt(resizeWidth) : null,
-            height: resizeHeight && resizeHeight !== 'Auto' ? parseInt(resizeHeight) : null
+            height: resizeHeight && resizeHeight !== 'Auto' ? parseInt(resizeHeight) : null,
+            keepAspectRatio: keepAspectRatio
           };
         } else if (resizeMode === 'percentage' && resizePercentage !== 100) {
           backendOptions.resize = {
@@ -2145,9 +2195,25 @@ const PicRedux = () => {
             const logoArrayBuffer = await watermarkLogo.arrayBuffer();
             backendOptions.watermark.image = Array.from(new Uint8Array(logoArrayBuffer));
           } else if (watermarkType === 'text' && watermarkText) {
-            backendOptions.watermark.text = watermarkText;
-            backendOptions.watermark.color = watermarkColor;
-            backendOptions.watermark.font = watermarkFont;
+            // Generate text watermark as PNG image using Canvas for proper font rendering
+            const textWatermarkImage = await generateTextWatermarkImage(
+              watermarkText, 
+              watermarkFont, 
+              watermarkColor, 
+              watermarkOpacity
+            );
+            if (textWatermarkImage) {
+              // Send as image type instead of text type for proper font support
+              backendOptions.watermark.type = 'image';
+              backendOptions.watermark.image = textWatermarkImage;
+              // Opacity is already baked into the image
+              backendOptions.watermark.opacity = 100;
+            } else {
+              // Fallback to text-based rendering
+              backendOptions.watermark.text = watermarkText;
+              backendOptions.watermark.color = watermarkColor;
+              backendOptions.watermark.font = watermarkFont;
+            }
           }
         }
         
@@ -2419,6 +2485,7 @@ const PicRedux = () => {
       resizeValue: resizeMode === 'percentage' ? resizePercentage : 100,
       resizeWidth: resizeMode === 'dimensions' ? finalResizeWidth : null,
       resizeHeight: resizeMode === 'dimensions' ? finalResizeHeight : null,
+      keepAspectRatio: keepAspectRatio,
       watermarkEnabled,
       watermarkText,
       watermarkOpacity,
@@ -2511,7 +2578,8 @@ const PicRedux = () => {
           backendOptions.resize = {
             mode: 'dimensions',
             width: config.resizeWidth ? parseInt(config.resizeWidth) : null,
-            height: config.resizeHeight && config.resizeHeight !== 'Auto' ? parseInt(config.resizeHeight) : null
+            height: config.resizeHeight && config.resizeHeight !== 'Auto' ? parseInt(config.resizeHeight) : null,
+            keepAspectRatio: config.keepAspectRatio
           };
         } else if (config.resizeMode === 'percentage' && config.resizeValue !== 100) {
           backendOptions.resize = {
@@ -2537,9 +2605,25 @@ const PicRedux = () => {
             const logoArrayBuffer = await config.watermarkLogo.arrayBuffer();
             backendOptions.watermark.image = Array.from(new Uint8Array(logoArrayBuffer));
           } else if (config.watermarkType === 'text' && config.watermarkText) {
-            backendOptions.watermark.text = config.watermarkText;
-            backendOptions.watermark.color = config.watermarkColor;
-            backendOptions.watermark.font = config.watermarkFont;
+            // Generate text watermark as PNG image using Canvas for proper font rendering
+            const textWatermarkImage = await generateTextWatermarkImage(
+              config.watermarkText, 
+              config.watermarkFont, 
+              config.watermarkColor, 
+              config.watermarkOpacity
+            );
+            if (textWatermarkImage) {
+              // Send as image type instead of text type for proper font support
+              backendOptions.watermark.type = 'image';
+              backendOptions.watermark.image = textWatermarkImage;
+              // Opacity is already baked into the image
+              backendOptions.watermark.opacity = 100;
+            } else {
+              // Fallback to text-based rendering
+              backendOptions.watermark.text = config.watermarkText;
+              backendOptions.watermark.color = config.watermarkColor;
+              backendOptions.watermark.font = config.watermarkFont;
+            }
           }
         }
         
@@ -2948,8 +3032,7 @@ const PicRedux = () => {
                       {socialPlatform === 'Instagram' && (
                         <>
                           <option value="Post">{t.sidebar.socialInstagramPost}</option>
-                          <option value="Story">{t.sidebar.socialInstagramStory}</option>
-                          <option value="Reel">{t.sidebar.socialInstagramReel}</option>
+                          <option value="Story / Reel">{t.sidebar.socialInstagramStoryReel || 'Story / Reel (9:16)'}</option>
                         </>
                       )}
                       {socialPlatform === 'YouTube' && (
@@ -3016,7 +3099,14 @@ const PicRedux = () => {
                       <input
                         type="number"
                         value={resizeWidth}
-                        onChange={(e) => setResizeWidth(e.target.value === '' ? '' : Number(e.target.value))}
+                        onChange={(e) => {
+                          const newWidth = e.target.value === '' ? '' : Number(e.target.value);
+                          setResizeWidth(newWidth);
+                          // Auto-uncheck keepAspectRatio if both dimensions are now set
+                          if (newWidth !== '' && resizeHeight !== '' && resizeHeight !== 'Auto') {
+                            setKeepAspectRatio(false);
+                          }
+                        }}
                         placeholder={t.sidebar.original}
                         className="w-full h-9 px-3 bg-zinc-800 border border-zinc-700 rounded-md text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-600/50 focus:border-violet-600/50 placeholder:text-zinc-600 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         style={{
@@ -3027,11 +3117,21 @@ const PicRedux = () => {
                     <div>
                       <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">{t.sidebar.height}</label>
                       <input
-                        type="text"
+                        type="number"
                         value={resizeHeight}
-                        onChange={(e) => setResizeHeight(e.target.value)}
+                        onChange={(e) => {
+                          const newHeight = e.target.value === '' ? '' : Number(e.target.value);
+                          setResizeHeight(newHeight);
+                          // Auto-uncheck keepAspectRatio if both dimensions are now set
+                          if (newHeight !== '' && resizeWidth !== '' && resizeWidth !== 0) {
+                            setKeepAspectRatio(false);
+                          }
+                        }}
                         placeholder={t.sidebar.original}
-                        className="w-full h-9 px-3 bg-zinc-800 border border-zinc-700 rounded-md text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-600/50 focus:border-violet-600/50 placeholder:text-zinc-600"
+                        className="w-full h-9 px-3 bg-zinc-800 border border-zinc-700 rounded-md text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-600/50 focus:border-violet-600/50 placeholder:text-zinc-600 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                        style={{
+                          MozAppearance: 'textfield'
+                        }}
                       />
                     </div>
                   </div>
@@ -3040,7 +3140,14 @@ const PicRedux = () => {
                     <input
                       type="checkbox"
                       checked={keepAspectRatio}
-                      onChange={(e) => setKeepAspectRatio(e.target.checked)}
+                      onChange={(e) => {
+                        const newValue = e.target.checked;
+                        setKeepAspectRatio(newValue);
+                        // If enabling keepAspectRatio while both dimensions are set, clear height
+                        if (newValue && resizeWidth !== '' && resizeHeight !== '' && resizeHeight !== 'Auto') {
+                          setResizeHeight('');
+                        }
+                      }}
                       className="sr-only"
                     />
                     <div className={cn(
@@ -3059,10 +3166,7 @@ const PicRedux = () => {
 
                   {/* Option Background Fill */}
                   <div className="space-y-3">
-                    <label className={cn(
-                      "flex items-center gap-2 cursor-pointer transition-all group",
-                      profile === PROFILE_SOCIAL_MEDIA && backgroundFill && "ring-2 ring-violet-600/50 rounded-lg p-2 bg-violet-600/10"
-                    )}>
+                    <label className="flex items-center gap-2 cursor-pointer transition-all group">
                       <input
                         type="checkbox"
                         checked={backgroundFill}
@@ -3080,15 +3184,7 @@ const PicRedux = () => {
                           <Check className="w-3 h-3 text-white" strokeWidth={3} />
                         )}
                       </div>
-                      <span className={cn(
-                        "text-sm",
-                        profile === PROFILE_SOCIAL_MEDIA && backgroundFill ? "text-violet-300 font-medium" : "text-zinc-300"
-                      )}>
-                        <span className="break-words">{t.sidebar.backgroundFill}</span>
-                        {profile === PROFILE_SOCIAL_MEDIA && (
-                          <span className="ml-1 text-xs text-violet-400 whitespace-nowrap">({t.sidebar.recommended})</span>
-                        )}
-                      </span>
+                      <span className="text-sm text-zinc-300 break-words">{t.sidebar.backgroundFill}</span>
                     </label>
 
                     {/* Sélecteur de couleur pour Background Fill */}

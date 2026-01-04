@@ -23,7 +23,9 @@ import {
   List,
   Lock,
   Crown,
-  Check
+  Check,
+  Square,
+  Loader2
 } from 'lucide-react';
 import Button from './components/ui/Button';
 import Card from './components/ui/Card';
@@ -1038,6 +1040,7 @@ const PicRedux = () => {
   const fileInputRef = useRef(null);
   const logoInputRef = useRef(null);
   const licenseKeyInputRef = useRef(null);
+  const isCancelledRef = useRef(false);
 
   const [profile, setProfile] = useState(PROFILE_CUSTOM);
   const [compressionFormat, setCompressionFormat] = useState('Original');
@@ -2489,9 +2492,23 @@ const PicRedux = () => {
     setFiles([]);
   };
 
+  const cancelOptimization = () => {
+    isCancelledRef.current = true;
+    setIsProcessing(false);
+    setProgress(0);
+    // Réinitialiser les fichiers en cours de traitement
+    setFiles(prev => prev.map(f => 
+      f.status === 'processing' 
+        ? { ...f, status: 'pending' }
+        : f
+    ));
+  };
 
   const handleExportAll = async () => {
     if (files.length === 0 || isProcessing) return;
+    
+    // Réinitialiser le flag d'annulation
+    isCancelledRef.current = false;
     
     if (!isPro && quotaUsed >= quotaLimit) {
       setShowActivationForm(true);
@@ -2593,6 +2610,12 @@ const PicRedux = () => {
     const totalFiles = sortedFiles.length;
 
     for (let i = 0; i < totalFiles; i++) {
+      // Vérifier si l'optimisation a été annulée
+      if (isCancelledRef.current) {
+        console.log('[handleExportAll] Optimization cancelled by user');
+        break;
+      }
+      
       const fileData = sortedFiles[i];
       
       if (!isPro) {
@@ -2627,6 +2650,11 @@ const PicRedux = () => {
       }
       
       try {
+        // Vérifier à nouveau si annulé avant de commencer le traitement
+        if (isCancelledRef.current) {
+          break;
+        }
+        
         setFiles(prev => prev.map(f => 
           f.id === fileData.id 
             ? { ...f, status: 'processing' }
@@ -2635,6 +2663,11 @@ const PicRedux = () => {
 
         // Traiter le fichier (compression)
         const result = await processFile(fileData, config);
+        
+        // Vérifier si annulé après le traitement
+        if (isCancelledRef.current) {
+          break;
+        }
 
         const outputFilename = getOutputPreview(fileData.name, result.actualFormat);
 
@@ -3744,33 +3777,48 @@ const PicRedux = () => {
 
         {/* Bouton "Lancer l'optimisation" fixé en bas */}
         <div className="p-4 border-t border-zinc-800 bg-zinc-900">
-          <Button
-            onClick={handleExportAll}
-            disabled={files.length === 0 || isProcessing || (!isPro && quotaUsed >= quotaLimit)}
-            variant="primary"
-            size="lg"
-            className="w-full"
-          >
-            {isProcessing ? (
-              <>
-                <Zap size={18} className="animate-pulse" />
-                {t.messages.processing}
-              </>
-            ) : files.length > 0 ? (
-              <>
-                <Play size={18} />
-                {files.length === 1 
-                  ? t.sidebar.optimizeFiles.replace('{count}', files.length)
-                  : t.sidebar.optimizeFilesPlural.replace('{count}', files.length)
-                }
-              </>
-            ) : (
-              <>
-                <Play size={18} />
-                {t.main.readyForOptimization}
-              </>
-            )}
-          </Button>
+          {isProcessing ? (
+            <div 
+              className="w-full px-4 py-2.5 bg-zinc-800 border border-white/10 rounded-md flex justify-between items-center cursor-default"
+            >
+              <div className="flex items-center gap-2">
+                <Loader2 size={18} className="animate-spin text-zinc-400" />
+                <span className="text-zinc-300 animate-pulse">
+                  {t.messages.processing}
+                </span>
+              </div>
+              <button
+                className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-zinc-400 hover:bg-red-500 hover:text-white transition-colors cursor-pointer"
+                onClick={cancelOptimization}
+                title="Cancel"
+              >
+                <Square size={12} fill="currentColor" />
+              </button>
+            </div>
+          ) : (
+            <Button
+              onClick={handleExportAll}
+              disabled={files.length === 0 || (!isPro && quotaUsed >= quotaLimit)}
+              variant="primary"
+              size="lg"
+              className="w-full"
+            >
+              {files.length > 0 ? (
+                <>
+                  <Play size={18} />
+                  {files.length === 1 
+                    ? t.sidebar.optimizeFiles.replace('{count}', files.length)
+                    : t.sidebar.optimizeFilesPlural.replace('{count}', files.length)
+                  }
+                </>
+              ) : (
+                <>
+                  <Play size={18} />
+                  {t.main.readyForOptimization}
+                </>
+              )}
+            </Button>
+          )}
           
           {/* Sélecteur de langue */}
           <div className="mt-3 pt-3 border-t border-zinc-800">

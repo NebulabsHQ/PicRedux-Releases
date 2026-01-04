@@ -3087,6 +3087,16 @@ const PicRedux = () => {
             </div>
           </div>
           
+          {/* Slim Status Banner - visible uniquement en mode PRO */}
+          {isPro && (
+            <div className="mt-3 no-drag">
+              <div className="w-full py-1.5 px-3 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-md flex items-center justify-center gap-2">
+                <Crown className="w-3 h-3 text-purple-200 flex-shrink-0" />
+                <span className="text-xs font-medium tracking-wide text-purple-200">{t.sidebar.licenseActive}</span>
+              </div>
+            </div>
+          )}
+          
           {/* Widget Quota - visible uniquement en mode TRIAL */}
           {!isPro && (
             <QuotaWidget 
@@ -3095,14 +3105,6 @@ const PicRedux = () => {
               onUpgrade={() => setShowActivationForm(true)}
               t={t}
             />
-          )}
-          
-          {/* Badge de Statut Premium - visible uniquement en mode PRO */}
-          {isPro && (
-            <div className="mt-3 py-2 px-3 bg-violet-500/10 border border-violet-500/20 rounded-lg flex items-center justify-center gap-2 no-drag">
-              <Crown className="text-violet-300" size={14} />
-              <span className="text-xs font-medium text-violet-300">{t.sidebar.licenseActive}</span>
-            </div>
           )}
         </div>
 

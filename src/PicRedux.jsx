@@ -25,7 +25,8 @@ import {
   Crown,
   Check,
   Square,
-  Loader2
+  Loader2,
+  Globe
 } from 'lucide-react';
 import Button from './components/ui/Button';
 import Card from './components/ui/Card';
@@ -1085,6 +1086,7 @@ const PicRedux = () => {
   const [quotaUsed, setQuotaUsed] = useState(0);
   const [quotaLimit, setQuotaLimit] = useState(30);
   const [quotaAllowed, setQuotaAllowed] = useState(true);
+  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
 
   const { isDuplicateFile, filteredFiles, filterStats } = useFileManagement(files, activeFilter, sortBy);
 
@@ -3020,15 +3022,59 @@ const PicRedux = () => {
           <div className="drag-region pt-8">
             {/* NOM + BADGE - Bloc compact */}
             <div className="flex flex-col gap-1.5">
-              <div className="flex items-center gap-1.5">
-                <img 
-                  src={logoApp} 
-                  alt="PicRedux" 
-                  className="w-7 h-7 flex-shrink-0 rounded -mt-0.5"
-                />
-                <h2 className="text-lg font-bold text-zinc-100 leading-none tracking-tight">
-                  PicRedux
-                </h2>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  <img 
+                    src={logoApp} 
+                    alt="PicRedux" 
+                    className="w-7 h-7 flex-shrink-0 rounded -mt-0.5"
+                  />
+                  <h2 className="text-lg font-bold text-zinc-100 leading-none tracking-tight">
+                    PicRedux
+                  </h2>
+                </div>
+                {/* Sélecteur de langue compact */}
+                <div className="relative no-drag">
+                  <button
+                    onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
+                    className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 hover:border-zinc-600 transition-colors"
+                  >
+                    <Globe size={12} className="text-zinc-400" />
+                    <span className="text-[10px] font-medium text-zinc-300 uppercase">
+                      {language.toUpperCase()}
+                    </span>
+                    <ChevronDown size={10} className="text-zinc-400" />
+                  </button>
+                  {isLanguageDropdownOpen && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-10" 
+                        onClick={() => setIsLanguageDropdownOpen(false)}
+                      />
+                      <div className="absolute top-full right-0 mt-1 z-20 bg-zinc-800 border border-zinc-700 rounded-md shadow-lg min-w-[140px] overflow-hidden">
+                        {supportedLanguages.map((lang) => (
+                          <button
+                            key={lang.code}
+                            onClick={() => {
+                              changeLanguage(lang.code);
+                              setIsLanguageDropdownOpen(false);
+                            }}
+                            className={cn(
+                              "w-full px-3 py-2 text-left text-xs flex items-center gap-2 hover:bg-zinc-700 transition-colors",
+                              language === lang.code ? "bg-zinc-700/50 text-zinc-100" : "text-zinc-300"
+                            )}
+                          >
+                            <span>{lang.flag}</span>
+                            <span className="font-medium">{lang.code.toUpperCase()}</span>
+                            {language === lang.code && (
+                              <Check size={12} className="ml-auto text-violet-400" />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-1.5 pl-8">
                 {!isPro && (
@@ -3819,25 +3865,6 @@ const PicRedux = () => {
               )}
             </Button>
           )}
-          
-          {/* Sélecteur de langue */}
-          <div className="mt-3 pt-3 border-t border-zinc-800">
-            <label className="block text-xs font-medium text-zinc-400 uppercase tracking-wide mb-1.5">{t.sidebar.language}</label>
-            <div className="relative">
-              <select
-                value={language}
-                onChange={(e) => changeLanguage(e.target.value)}
-                className="w-full h-9 px-3 pr-8 bg-zinc-800 border border-zinc-700 rounded-md text-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-600/50 focus:border-violet-600/50 appearance-none cursor-pointer"
-              >
-                {supportedLanguages.map((lang) => (
-                  <option key={lang.code} value={lang.code}>
-                    {lang.flag} {lang.code.toUpperCase()}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown size={16} className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
-            </div>
-          </div>
         </div>
       </aside>
 

@@ -13,33 +13,47 @@
     "homepage": "https://nebulabs.gumroad.com",
     "scripts": {
         "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
-        "build": "vite build",
+        "install:sharp-universal": "node scripts/install-sharp-universal.cjs",
+        "build": "npm run install:sharp-universal && rm -rf dist && vite build && electron-builder",
+        "build:vite": "vite build",
         "preview": "vite preview",
         "electron": "electron .",
         "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
-        "electron:build": "npm run build && electron .",
-        "dist": "npm run build && electron-builder",
+        "electron:build": "npm run build:vite && electron .",
+        "dist": "npm run build:vite && electron-builder",
         "postinstall": "electron-builder install-app-deps",
         "rebuild": "electron-builder install-app-deps",
-        "publish": "npm run build && electron-builder --publish always $(node -e \"console.log(process.arch === 'arm64' ? '--arm64' : '--x64')\")",
-        "publish:arm": "npm run build && electron-builder --arm64 --publish always",
-        "publish:intel": "npm run build && electron-builder --x64 --publish always",
-        "publish:win": "npm run build && electron-builder --win --publish always"
+        "publish": "npm run build:vite && electron-builder --publish always $(node -e \"console.log(process.arch === 'arm64' ? '--arm64' : '--x64')\")",
+        "publish:arm": "npm run build:vite && electron-builder --arm64 --publish always",
+        "publish:intel": "npm run build:vite && electron-builder --x64 --publish always",
+        "publish:win": "npm run build:vite && electron-builder --win --publish always"
     },
     "build": {
+        "appId": "com.picredux.app",
+        "productName": "PicRedux",
+        "copyright": "Copyright © 2025 PicRedux",
         "asarUnpack": [
             "**/node_modules/sharp/**/*",
             "**/node_modules/@img/**/*",
             "**/node_modules/heic-convert/**/*",
             "**/node_modules/heic-decode/**/*"
         ],
-        "appId": "com.nebulabs.picredux",
-        "productName": "PicRedux",
         "directories": {
-            "output": "release"
+            "output": "dist",
+            "buildResources": "build"
         },
         "files": [
             "dist/**/*",
+            "!dist/mac-*",
+            "!dist/mac-*/**/*",
+            "!dist/win-*",
+            "!dist/win-*/**/*",
+            "!dist/*.dmg",
+            "!dist/*.zip",
+            "!dist/*.exe",
+            "!dist/*.yml",
+            "!dist/*.yaml",
+            "!dist/*.blockmap",
             "electron/**/*",
             "package.json",
             "node_modules/@img/**/*"
@@ -52,23 +66,40 @@
             }
         ],
         "mac": {
-            "target": [
-                "dmg",
-                "zip"
-            ],
-            "icon": "assets/icons/icon.icns",
+            "target": {
+                "target": "dmg",
+                "arch": [
+                    "universal"
+                ]
+            },
+            "category": "public.app-category.photography",
+            "icon": "build/icon.icns",
             "hardenedRuntime": true,
-            "gatekeeperAssess": false
+            "gatekeeperAssess": false,
+            "entitlements": "build/entitlements.mac.plist",
+            "entitlementsInherit": "build/entitlements.mac.plist",
+            "x64ArchFiles": "{**/@img/sharp-darwin-x64/**,**/@img/sharp-libvips-darwin-x64/**}",
+            "singleArchFiles": "**/LICENSE*"
+        },
+        "dmg": {
+            "sign": false
         },
         "win": {
             "target": "nsis",
             "icon": "build/icon.ico"
+        },
+        "nsis": {
+            "oneClick": false,
+            "allowToChangeInstallationDirectory": true,
+            "createDesktopShortcut": true
         },
         "linux": {
             "target": "AppImage"
         }
     },
     "dependencies": {
+        "@img/sharp-libvips-darwin-arm64": "^1.2.4",
+        "@img/sharp-libvips-darwin-x64": "^1.2.4",
         "clsx": "^2.1.1",
         "electron-log": "^5.0.0",
         "electron-store": "^11.0.2",
@@ -79,6 +110,10 @@
         "react-dom": "^18.2.0",
         "sharp": "^0.33.5",
         "tailwind-merge": "^3.4.0"
+    },
+    "optionalDependencies": {
+        "@img/sharp-darwin-arm64": "^0.33.5",
+        "@img/sharp-darwin-x64": "^0.33.5"
     },
     "devDependencies": {
         "@vitejs/plugin-react": "^4.2.0",

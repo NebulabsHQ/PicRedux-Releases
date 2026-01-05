@@ -101,12 +101,12 @@ async function main() {
             if (libvipsFile) {
                 const targetPath = path.join(libDir, 'libvips-cpp.42.dylib');
                 const sourcePath = path.join(libDir, libvipsFile);
-                // Toujours copier le fichier (pas de symlink pour éviter les problèmes avec electron-builder)
+                // Renommer le fichier (au lieu de copier) pour réduire la taille du build
                 if (fs.existsSync(targetPath)) {
                     fs.unlinkSync(targetPath);
                 }
-                fs.copyFileSync(sourcePath, targetPath);
-                console.log(`  ✓ ${dir}: ${libvipsFile} -> libvips-cpp.42.dylib`);
+                fs.renameSync(sourcePath, targetPath);
+                console.log(`  ✓ ${dir}: ${libvipsFile} renommé en libvips-cpp.42.dylib`);
             }
         }
     }
